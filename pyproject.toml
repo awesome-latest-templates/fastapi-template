@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "fastapi-template"
+version = "0.1.0"
+description = "Fast template to create fastapi customazied api"
+authors = ["Walter Hu <changyhu@tesla.com>"]
+readme = "README.md"
+packages = [{ include = "fastapi_template" }]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: IPython",
+    "Intended Audience :: Developers",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Typing :: Typed",
+]
+
+[tool.poetry.dependencies]
+python = "^3.11.0"
+fastapi = "^0.87.0"
+uvicorn = { version = "^0.20.0", extras = ["standard"] }
+gunicorn = "^20.1.0"
+orjson = "^3.8.2"
+sqlalchemy = "^1.4.44"
+rich = "^12.6.0"
+structlog = "^22.2.0"
+asgi-correlation-id = "^3.2.1"
+python-multipart = "^0.0.5"
+python-jose = { version = "^3.3.0", extras = ["cryptography"] }
+passlib = { version = "^1.7.4", extras = ["bcrypt"] }
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.2.0"
+flake8 = "^5.0.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
