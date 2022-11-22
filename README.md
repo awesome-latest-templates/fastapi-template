@@ -1,2 +1,2 @@
-# fastapi-template
+# fastapi_template
 fastapi template
