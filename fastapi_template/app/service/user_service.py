@@ -13,7 +13,7 @@ from fastapi_template.app.exception import HttpException
 
 class UserService:
 
-    async def login(self, login_data: UserLoginRequest) -> UserResponse:
+    async def create_token_async(self, login_data: UserLoginRequest) -> UserResponse:
         response = UserResponse()
         username = login_data.username
         password = login_data.password
@@ -23,21 +23,21 @@ class UserService:
             result_data: Optional[model.User] = await crud.user.query_by_username(username=username)
             if not result_data:
                 raise HttpException(ResponseCode.NOT_FOUND, "not found associated user")
-            store_password = result_data.Password
+            store_password = result_data.password
             valid_password = verify_password(password, store_password)
             if not valid_password:
                 raise HttpException(ResponseCode.BAD_REQUEST, "password is incorrect")
-            is_active = result_data.IsActive == 1
+            is_active = result_data.is_active == 1
             if not is_active:
                 raise HttpException(ResponseCode.FORBIDDEN, "user is deactivate")
-            response.Id = result_data.Id
-            response.UserName = result_data.UserName
-            response.NickName = result_data.NickName
-            response.LastLoginTime = result_data.LastLoginTime
-            response.Avatar = result_data.Avatar
+            response.id = result_data.id
+            response.user_name = result_data.user_name
+            response.nick_name = result_data.nick_name
+            response.last_login_time = result_data.last_login_time
+            response.avatar = result_data.avatar
             # create the token
             token_data = TokenPayload()
-            token_data.id = response.Id
+            token_data.id = response.id
             token = create_access_token(token_data, datetime.timedelta(days=1))
             response.token = token
 
@@ -48,3 +48,6 @@ class UserService:
     def get_user_detail(self, user_id: str, session: Session) -> model.User:
         resp = session.query(model.User).filter(model.User.Id == user_id, model.User.IsActive == 1).first()
         return resp
+
+
+user = UserService()

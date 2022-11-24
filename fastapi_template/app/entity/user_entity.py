@@ -16,10 +16,10 @@ class UserUpdateRequest(BaseModel):
 
 
 class UserResponse(BaseModel):
-    Id: int = 0
-    UserName: str = None
-    NickName: str = None
-    LastLoginTime: str = None
-    Avatar: str = None
+    id: int = 0
+    user_name: str = None
+    nick_name: str = None
+    last_login_time: str = None
+    avatar: str = None
     token: str = None
-    Email: str = None
+    email: str = None

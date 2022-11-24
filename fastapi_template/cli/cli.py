@@ -2,6 +2,7 @@
 import logging
 
 import click
+
 from fastapi_template.cli.serve import serve
 
 cmd_help = "fastapi_template CLI root."

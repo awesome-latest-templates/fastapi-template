@@ -5,8 +5,8 @@ from passlib.context import CryptContext
 from pydantic import ValidationError
 from starlette import status
 
-from fastapi_template.app.exception import HttpException
 from fastapi_template.app.entity.auth_entity import TokenPayload, TokenResponse
+from fastapi_template.app.exception import HttpException
 from fastapi_template.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

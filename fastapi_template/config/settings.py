@@ -38,6 +38,8 @@ class Settings(BaseSettings):
     # cache
     CACHE_PREFIX: str = "fastapi"
     CACHE_EXPIRED_SECONDS: int = 600
+    # snowflake
+    SNOWFLAKE_INSTANCE: int = 10
 
     class Config:
         case_sensitive = True

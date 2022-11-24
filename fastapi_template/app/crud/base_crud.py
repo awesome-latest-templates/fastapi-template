@@ -6,6 +6,8 @@ from fastapi.encoders import jsonable_encoder
 from fastapi_pagination import Params, Page
 from fastapi_pagination.ext.async_sqlalchemy import paginate
 from pydantic import BaseModel
+from sqlalchemy import text
+from sqlalchemy.engine import Result
 from sqlmodel import SQLModel, select, func
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel.sql.expression import Select
@@ -35,8 +37,14 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
                         item_id: Union[UUID, str, int],
                         db_session: Optional[AsyncSession] = None,
                         ) -> Optional[ModelType]:
+        """
+        Get the item data by id
+        :param item_id:
+        :param db_session:
+        :return:
+        """
         db_session = db_session or db.session
-        query = select(self.model).where(self.model.Id == item_id)
+        query = select(self.model).where(self.model.id == item_id)
         response = await db_session.execute(query)
         return response.scalar_one_or_none()
 
@@ -45,15 +53,26 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
                          list_ids: List[Union[UUID, str, int]],
                          db_session: Optional[AsyncSession] = None,
                          ) -> Optional[List[ModelType]]:
+        """
+        Get the item data by ids
+        :param list_ids:
+        :param db_session:
+        :return:
+        """
         db_session = db_session or db.session
         response = await db_session.execute(
-            select(self.model).where(self.model.Id.in_(list_ids))
+            select(self.model).where(self.model.id.in_(list_ids))
         )
         return response.scalars().all()
 
     async def get_count(self,
                         db_session: Optional[AsyncSession] = None,
                         ) -> Optional[ModelType]:
+        """
+        Get the item data count
+        :param db_session:
+        :return:
+        """
         db_session = db_session or db.session
         response = await db_session.execute(
             select(func.count()).select_from(select(self.model).subquery())
@@ -67,9 +86,17 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
                        query: Optional[Union[T, Select[T]]] = None,
                        db_session: Optional[AsyncSession] = None,
                        ) -> List[ModelType]:
+        """
+        Get all the item data
+        :param skip:
+        :param limit:
+        :param query:
+        :param db_session:
+        :return:
+        """
         db_session = db_session or db.session
         if query is None:
-            query = select(self.model).offset(skip).limit(limit).order_by(self.model.Id)
+            query = select(self.model).offset(skip).limit(limit).order_by(self.model.id)
         response = await db_session.execute(query)
         return response.scalars().all()
 
@@ -79,6 +106,13 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
                                  query: Optional[Union[T, Select[T]]] = None,
                                  db_session: Optional[AsyncSession] = None,
                                  ) -> Page[ModelType]:
+        """
+        Get all the item data with pagination
+        :param params:
+        :param query:
+        :param db_session:
+        :return:
+        """
         db_session = db_session or db.session
         if query is None:
             query = select(self.model)
@@ -87,16 +121,25 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
     async def get_many_paginated_ordered(self,
                                          *,
                                          params: Optional[Params] = Params(),
+                                         query: Optional[Union[T, Select[T]]] = None,
                                          order_by: Optional[str] = None,
                                          order: Optional[OrderEnum] = OrderEnum.descendent,
-                                         query: Optional[Union[T, Select[T]]] = None,
                                          db_session: Optional[AsyncSession] = None,
                                          ) -> Page[ModelType]:
+        """
+        Get all the item data with pagination and order
+        :param params:
+        :param order_by:
+        :param order:
+        :param query:
+        :param db_session:
+        :return:
+        """
         db_session = db_session or db.session
         columns = self.model.__table__.columns
 
         if order_by not in columns or order_by is None:
-            order_by = self.model.Id
+            order_by = self.model.id
 
         if query is None:
             if order == OrderEnum.ascendent:
@@ -114,11 +157,20 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
                                limit: int = 100,
                                db_session: Optional[AsyncSession] = None,
                                ) -> List[ModelType]:
+        """
+        Get all the Item data and order by
+        :param order_by:
+        :param order:
+        :param skip:
+        :param limit:
+        :param db_session:
+        :return:
+        """
         db_session = db_session or db.session
         columns = self.model.__table__.columns
 
         if order_by not in columns or order_by is None:
-            order_by = self.model.Id
+            order_by = self.model.id
 
         if order == OrderEnum.ascendent:
             query = (
@@ -144,6 +196,13 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
                      created_by: Optional[Union[UUID, str, int]] = None,
                      db_session: Optional[AsyncSession] = None,
                      ) -> ModelType:
+        """
+        Create the item data
+        :param create_entity:
+        :param created_by:
+        :param db_session:
+        :return:
+        """
         db_session = db_session or db.session
         db_obj = self.model.from_orm(create_entity)  # type: ignore
         db_obj.CreateTime = datetime.utcnow()
@@ -163,7 +222,7 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
                      db_session: Optional[AsyncSession] = None,
                      ) -> ModelType:
         """
-        Update the item data
+        Update the item data by previous model data
         :param current_entity:
         :param update_entity:
         :param db_session:
@@ -189,6 +248,27 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         await db_session.refresh(current_entity)
         return current_entity
 
+    async def update_by_id(self,
+                           *,
+                           item_id: Union[UUID, str, int],
+                           update_entity: Union[UpdateEntityType, Dict[str, Any], ModelType],
+                           db_session: Optional[AsyncSession] = None,
+                           ) -> ModelType:
+        """
+        Update the item data by id
+        :param item_id:
+        :param current_entity:
+        :param update_entity:
+        :param db_session:
+        :return:
+        """
+        db_session = db_session or db.session
+        current_entity: Optional[ModelType] = await self.get_by_id(item_id=item_id, db_session=db_session)
+        update_result = await self.update(current_entity=current_entity,
+                                          update_entity=update_entity,
+                                          db_session=db_session)
+        return update_result
+
     async def remove(self,
                      *,
                      id: Union[UUID, str, int],
@@ -202,9 +282,25 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         """
         db_session = db_session or db.session
         response = await db_session.execute(
-            select(self.model).where(self.model.Id == id)
+            select(self.model).where(self.model.id == id)
         )
         obj = response.scalar_one()
         await db_session.delete(obj)
         await db_session.commit()
         return obj
+
+    async def execute(self,
+                      statement: str,
+                      **kwargs
+                      ) -> Result:
+        """
+        Remove the item data by item id
+        :param statement:
+        :param params:
+        :param id:
+        :param db_session:
+        :return:
+        """
+        db_session = db.session
+        response = await db_session.execute(text(statement).execution_options(autocommit=True), kwargs)
+        return response.scalars()
