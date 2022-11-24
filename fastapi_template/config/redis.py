@@ -1,4 +1,6 @@
 """Application configuration - Redis."""
+from functools import lru_cache
+
 from pydantic import BaseSettings
 
 
@@ -47,4 +49,9 @@ class Redis(BaseSettings):
         case_sensitive = True
 
 
-redis = Redis()
+@lru_cache()
+def get_settings():
+    return Redis()
+
+
+redis = get_settings()

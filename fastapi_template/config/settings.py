@@ -1,3 +1,5 @@
+import os
+from functools import lru_cache
 from typing import List, Union
 
 from pydantic import BaseSettings, validator
@@ -6,6 +8,7 @@ from pydantic import BaseSettings, validator
 class Settings(BaseSettings):
     # Swagger UI
     PROJECT_NAME: str = 'FastAPI_Template'
+    API_PREFIX: str = "/api"
     # JWT Token
     # binascii.hexlify(os.urandom(24)) or secrets.token_urlsafe(32)
     JWT_SECRET_KEY: str = "3038850e0ce74437b089276268dac510"
@@ -28,13 +31,22 @@ class Settings(BaseSettings):
 
     # https://flask-sqlalchemy.palletsprojects.com/en/2.x/config/
     SQLALCHEMY_DATABASE_URI: str
-    DATABASE_ENGINE_POOL_SIZE: int = 20
+    DATABASE_ENGINE_POOL_SIZE: int = 83
     DATABASE_ENGINE_MAX_OVERFLOW: int = 0
 
     USE_REDIS: bool = False
+    # cache
+    CACHE_PREFIX: str = "fastapi"
+    CACHE_EXPIRED_SECONDS: int = 600
 
     class Config:
         case_sensitive = True
+        env_file = os.path.expanduser("~/.env")
 
 
-settings = Settings()
+@lru_cache()
+def get_settings():
+    return Settings()
+
+
+settings = get_settings()

@@ -4,7 +4,8 @@ from typing import Any, Optional, Dict
 from asgi_correlation_id import correlation_id
 from fastapi import Request
 
-from fastapi_template.app.common import ResponseCode, Response
+from fastapi_template.app.core import ResponseCode, Response
+from fastapi_template.app.core.log import logger
 
 
 class HttpException(Exception):
@@ -78,4 +79,5 @@ async def http_exception_handler(request: Request, exception: HttpException):
         'X-Request-ID': correlation_id.get() or "",
         'Access-Control-Expose-Headers': 'X-Request-ID'
     }
+    logger.error(f'Unhandled exception: {str(exception)}')
     return Response.fail(code=exception.status_code, message=exception.detail, headers=headers)
