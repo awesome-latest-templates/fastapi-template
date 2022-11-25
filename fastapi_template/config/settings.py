@@ -9,6 +9,11 @@ class Settings(BaseSettings):
     # Swagger UI
     PROJECT_NAME: str = 'FastAPI_Template'
     API_PREFIX: str = "/api"
+    #
+    FILE_UPLOAD_FOLDER: str = "/Users/changyhu/static"
+    FILE_URL_PREFIX: str = "/static"
+    FILE_READ_CHUNK_SIZE: int = 1024  # 1kb
+    FILE_MAX_SIZE: int = 5 * 1024 * 1024  # 100MB
     # JWT Token
     # binascii.hexlify(os.urandom(24)) or secrets.token_urlsafe(32)
     JWT_SECRET_KEY: str = "3038850e0ce74437b089276268dac510"
@@ -16,6 +21,7 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_ISSUER: str = PROJECT_NAME
     JWT_AUDIENCE: str = PROJECT_NAME
+    TOKEN_HEADER_NAME: str = 'Authorization'
     # BACKEND_CORS_ORIGINS is a JSON-formatted list of origins
     # e.g: '["http://localhost", "http://localhost:4200", "http://localhost:3000", \
     # "http://localhost:8080", "http://local.dockertoolbox.tiangolo.com"]'
@@ -30,7 +36,7 @@ class Settings(BaseSettings):
         raise ValueError(v)
 
     # https://flask-sqlalchemy.palletsprojects.com/en/2.x/config/
-    SQLALCHEMY_DATABASE_URI: str
+    SQLALCHEMY_DATABASE_URI: str = None
     DATABASE_ENGINE_POOL_SIZE: int = 83
     DATABASE_ENGINE_MAX_OVERFLOW: int = 0
 

@@ -205,10 +205,10 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         """
         db_session = db_session or db.session
         db_obj = self.model.from_orm(create_entity)  # type: ignore
-        db_obj.CreateTime = datetime.utcnow()
-        db_obj.UpdateTime = datetime.utcnow()
+        db_obj.create_time = datetime.utcnow()
+        db_obj.update_time = datetime.utcnow()
         if created_by:
-            db_obj.CreateBy = created_by
+            db_obj.create_by = created_by
 
         db_session.add(db_obj)
         await db_session.commit()
@@ -240,7 +240,7 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         for field in obj_data:
             if field in update_data:
                 setattr(current_entity, field, update_data[field])
-            if field == "UpdateTime":
+            if field == "update_time":
                 setattr(current_entity, field, datetime.utcnow())
 
         db_session.add(current_entity)
@@ -271,18 +271,18 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
 
     async def remove(self,
                      *,
-                     id: Union[UUID, str, int],
+                     item_id: Union[UUID, str, int],
                      db_session: Optional[AsyncSession] = None
                      ) -> ModelType:
         """
         Remove the item data by item id
-        :param id:
+        :param item_id:
         :param db_session:
         :return:
         """
         db_session = db_session or db.session
         response = await db_session.execute(
-            select(self.model).where(self.model.id == id)
+            select(self.model).where(self.model.id == item_id)
         )
         obj = response.scalar_one()
         await db_session.delete(obj)
@@ -294,7 +294,7 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
                       **kwargs
                       ) -> Result:
         """
-        Remove the item data by item id
+        Execute the raw sql
         :param statement:
         :param params:
         :param id:
@@ -303,4 +303,4 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         """
         db_session = db.session
         response = await db_session.execute(text(statement).execution_options(autocommit=True), kwargs)
-        return response.scalars()
+        return response.fetchall()

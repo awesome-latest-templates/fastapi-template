@@ -1,4 +1,7 @@
-from sqlalchemy import Column, Text, text, Integer
+from datetime import datetime
+from typing import Optional
+
+from sqlalchemy import Column, Text, Integer
 from sqlalchemy.orm import declared_attr
 from sqlmodel import SQLModel as _SQLModel, Field
 
@@ -15,15 +18,19 @@ class SQLModel(_SQLModel):
 
 
 class BaseSQLModel(SQLModel):
-    id: int = Field(
-        default_factory=next(gen),
+    id: Optional[int] = Field(
+        default_factory=gen.__next__,
         primary_key=True,
         index=True,
         nullable=False,
     )
-    created_time: str = Field(sa_column=Column('create_time', Text, nullable=False))
-    updated_time: str = Field(
-        sa_column=Column('update_time', Text, nullable=False, server_default=text('CURRENT_TIMESTAMP')))
-    create_by: str = Field(sa_column=Column('create_by', Text, nullable=False, server_default=text("'system'")))
-    update_by: str = Field(sa_column=Column('update_by', Text, nullable=False, server_default=text("'system'")))
-    is_active: int = Field(sa_column=Column('is_active', Integer, nullable=False, server_default=text('1')))
+    create_time: Optional[str] = Field(
+        sa_column=Column('create_time', Text, nullable=False))
+    update_time: Optional[str] = Field(
+        sa_column=Column('update_time', Text, nullable=False), default=datetime.utcnow())
+    create_by: Optional[str] = Field(
+        sa_column=Column('create_by', Text, nullable=False), default="system")
+    update_by: Optional[str] = Field(
+        sa_column=Column('update_by', Text, nullable=False), default="system")
+    is_active: int = Field(
+        sa_column=Column('is_active', Integer, nullable=False), default=1)

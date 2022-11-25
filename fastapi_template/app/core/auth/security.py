@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
+from typing import Optional
 
-from jose import jwt
+from jose import jwt, ExpiredSignatureError
 from passlib.context import CryptContext
 from pydantic import ValidationError
 from starlette import status
@@ -21,8 +22,6 @@ def create_access_token(data: TokenPayload, expires_delta: timedelta = None) -> 
 
     payload = data.dict()
     payload.update({
-        # "sub": "",
-        # "nameid": "",
         "exp": expire,
         'iss': settings.JWT_ISSUER,
         'aud': settings.JWT_AUDIENCE
@@ -40,20 +39,36 @@ def create_access_token(data: TokenPayload, expires_delta: timedelta = None) -> 
     return token_response
 
 
-def verify_token(token: str) -> TokenPayload:
-    credentials_exception = HttpException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "bearer"}
-    )
+async def verify_access_token(token: str) -> Optional[int]:
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        payload = jwt.decode(token,
+                             key=settings.JWT_SECRET_KEY,
+                             algorithms=[settings.JWT_ALGORITHM],
+                             audience=settings.JWT_AUDIENCE,
+                             issuer=settings.JWT_ISSUER)
         if not payload.get("upn"):
-            raise credentials_exception
+            detail = "Cannot validate token user data"
+            raise HttpException(
+                detail=detail,
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                headers={"WWW-Authenticate": "bearer"}
+            )
         token_data = TokenPayload(**payload)
-        return token_data
-    except (jwt.JWTError, ValidationError):
-        raise credentials_exception
+    except ExpiredSignatureError:
+        detail = "Token expired"
+        raise HttpException(
+            detail=detail,
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            headers={"WWW-Authenticate": "bearer"}
+        )
+    except (jwt.JWTError, ValidationError) as e:
+        raise HttpException(
+            detail=str(e),
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            headers={"WWW-Authenticate": "bearer"}
+        )
+    user_id = token_data.upn
+    return user_id
 
 
 def create_hash_password(password: str) -> str:

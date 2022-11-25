@@ -1,9 +1,9 @@
 from pydantic import BaseModel
 
 
-class RoleCreate(BaseModel):
+class RoleCreateRequest(BaseModel):
     pass
 
 
-class RoleUpdate(BaseModel):
+class RoleUpdateRequest(BaseModel):
     pass

@@ -109,6 +109,9 @@ class SnowflakeGenerator:
     def epoch(self) -> int:
         return self._epo
 
+    def next(self):
+        self.__next__()
+
     def __iter__(self):
         return self
 

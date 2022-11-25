@@ -38,6 +38,7 @@ fastapi-pagination = "^0.10.0"
 fastapi-cache2 = "^0.1.9"
 asyncer = "^0.0.2"
 apscheduler = "^3.9.1.post1"
+aiofiles = "^22.1.0"
 
 
 [tool.poetry.dev-dependencies]

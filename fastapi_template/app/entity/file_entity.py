@@ -1,21 +1,19 @@
-from uuid import UUID
-
-from fastapi import UploadFile
 from pydantic import BaseModel
 
 
-class FileCreate(BaseModel):
-    file: UploadFile
-    file_key: UUID
+class FileCreateRequest(BaseModel):
+    file_key: str
     file_url: str
     file_name: str
+    file_size: int
+    content_type: str
 
 
-class FileUpdate(BaseModel):
+class FileUpdateRequest(BaseModel):
     pass
 
 
 class FileResponse(BaseModel):
     file_key: str = None
     file_url: str = None
-    update_time: str = None
+    upload_time: str = None

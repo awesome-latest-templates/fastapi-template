@@ -3,8 +3,9 @@ from typing import Any, Optional, Dict
 
 from asgi_correlation_id import correlation_id
 from fastapi import Request
+from starlette import status
 
-from fastapi_template.app.core import ResponseCode
+from fastapi_template.app.core import ResponseCode, Response
 from fastapi_template.app.core.log import logger
 
 
@@ -23,8 +24,9 @@ class HttpException(Exception):
 
     def __init__(
             self,
-            status_code: ResponseCode,
+            code: ResponseCode = ResponseCode.SUCCESS,
             detail: Any = None,
+            status_code: int = status.HTTP_200_OK,
             headers: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Initialize HTTPException class object instance.
@@ -35,6 +37,7 @@ class HttpException(Exception):
             headers (Optional[Dict[str, Any]]): Additional response headers.
 
         """
+        self.code = code
         self.status_code = status_code
         self.detail = detail
         self.headers = headers
@@ -79,6 +82,11 @@ async def http_exception_handler(request: Request, exception: HttpException):
         'X-Request-ID': correlation_id.get() or "",
         'Access-Control-Expose-Headers': 'X-Request-ID'
     }
-    logger.error(f'Unhandled exception: {str(exception)}')
-    raise exception
-    # return Response.fail(code=exception.status_code, message=exception.detail, headers=headers)
+    if exception.headers:
+        headers.update(exception.headers)
+
+    logger.exception(f'Unhandled exception', exception=exception)
+    return Response.fail(code=exception.code,
+                         status_code=exception.status_code,
+                         message=str(exception.detail),
+                         headers=headers)

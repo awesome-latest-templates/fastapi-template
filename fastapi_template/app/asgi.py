@@ -6,6 +6,7 @@ from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_pagination import add_pagination
 from pydantic import BaseConfig
+from starlette.staticfiles import StaticFiles
 
 from fastapi_template.app.api.router import api_router
 from fastapi_template.app.core import Response
@@ -48,6 +49,7 @@ app: FastAPI = FastAPI(
     default_response_class=Response
 )
 BaseConfig.arbitrary_types_allowed = True
+app.mount(f"{settings.FILE_URL_PREFIX}", StaticFiles(directory=settings.FILE_UPLOAD_FOLDER))
 GlobalMiddlewares(app).init()
 logger.debug("Adding application routes...")
 app.include_router(api_router, prefix=settings.API_PREFIX)

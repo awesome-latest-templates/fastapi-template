@@ -3,6 +3,11 @@ from typing import Union, Optional
 from pydantic import BaseModel, UUID4
 
 
+class AuthLoginRequest(BaseModel):
+    username: str
+    password: str
+
+
 class TokenResponse(BaseModel):
     access_token: str
     expires_in: int
@@ -10,5 +15,4 @@ class TokenResponse(BaseModel):
 
 
 class TokenPayload(BaseModel):
-    id: Optional[Union[int, UUID4]] = None
-    roles: list = []
+    upn: Optional[Union[int, UUID4]] = None

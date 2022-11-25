@@ -25,7 +25,7 @@ class ResponseCode(enum.Enum):
     NOT_FOUND = (404, 'Not Found', 'Nothing matches the given URI')
     DATA_DUPLICATED = (409, 'Conflict', 'Request data duplicated')
     DATA_UNPROCESSABLED = (422, 'Un-Processable Entity', 'The server cannot process your request')
-    HTTP_ERROR = (110, 'Http Connection Error', "Http connection met exception")
+    UNHANDLED_ERROR = (110, 'Unhandled Error', "Met exception but server not handled")
     INTERNAL_SERVER_ERROR = (500, HTTPStatus.INTERNAL_SERVER_ERROR.phrase, HTTPStatus.INTERNAL_SERVER_ERROR.description)
 
 
