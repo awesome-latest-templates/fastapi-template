@@ -1,7 +1,7 @@
 from typing import Optional
 
 from fastapi import Security, Depends
-from fastapi.security import APIKeyHeader
+from fastapi.security import APIKeyHeader, SecurityScopes
 from starlette import status
 
 from fastapi_template.app import service
@@ -29,7 +29,9 @@ def get_access_token(
     return token_header
 
 
-async def get_current_user(access_token: str = Depends(get_access_token)) -> Optional[UserDetail]:
+async def get_current_user(scope: SecurityScopes = None,
+                           access_token: str = Depends(get_access_token)) -> Optional[UserDetail]:
+    scope = scope if scope else []
     user_id = await verify_access_token(access_token)
     user_detail = await service.user.get_user_detail(user_id=user_id)
     if not user_detail:
@@ -38,6 +40,17 @@ async def get_current_user(access_token: str = Depends(get_access_token)) -> Opt
             detail=detail,
             status_code=status.HTTP_401_UNAUTHORIZED,
             headers={"WWW-Authenticate": "bearer"}
+        )
+    user_role = user_detail['role']
+    if scope and not user_role:
+        raise HttpException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permissions"
+        )
+    if scope and not set(scope).issubset(set(user_role)):
+        raise HttpException(
+            status_code=401,
+            detail=f"Role {str(scope)}  is required for this action",
         )
     return UserDetail(**user_detail)
 
