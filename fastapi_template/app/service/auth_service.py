@@ -26,12 +26,21 @@ class AuthService:
         if not is_active:
             raise HttpException(ResponseCode.FORBIDDEN, "user is deactivate")
         # get user roles
-        user_detail = await service.user.get_user_detail(user_id=user_data.id)
+        user_detail = await service.user.get_user_detail(user_id=user_data.id, user_data=user_data)
         # create the oauth jwt token
         token_payload = TokenPayload()
-        token_payload.upn = user_detail.id
+        token_payload.upn = user_detail['id']
         token_resp = create_access_token(token_payload, datetime.timedelta(days=1))
+        # save the login data
+        update_data = {
+            "last_login_time": datetime.datetime.utcnow()
+        }
+        await self.save_login_data(user_data, update_data)
         return token_resp
+
+    async def save_login_data(self, previous_user_data, update_user_data):
+        user_data = await crud.user.update(current_entity=previous_user_data, update_entity=update_user_data)
+        return user_data
 
 
 auth = AuthService()

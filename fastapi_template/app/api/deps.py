@@ -39,7 +39,7 @@ async def get_current_user(access_token: str = Depends(get_access_token)) -> Opt
             status_code=status.HTTP_401_UNAUTHORIZED,
             headers={"WWW-Authenticate": "bearer"}
         )
-    return user_detail
+    return UserDetail(**user_detail)
 
 
 def valid_content_length():

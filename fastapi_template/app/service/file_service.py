@@ -7,6 +7,7 @@ from starlette import status
 from starlette.requests import Request
 
 from fastapi_template.app import crud
+from fastapi_template.app.core import ResponseCode
 from fastapi_template.app.core.log import logger
 from fastapi_template.app.entity.file_entity import FileCreateRequest, FileResponse
 from fastapi_template.app.exception import HttpException
@@ -29,6 +30,7 @@ class FileService:
                     upload_file_size += len(content)
                     if upload_file_size > file_size:
                         raise HttpException(
+                            code=ResponseCode.BAD_REQUEST,
                             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                             detail="Too large file, file shoult not exceed ",
                         )

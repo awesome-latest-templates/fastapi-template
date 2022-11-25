@@ -62,8 +62,9 @@ async def verify_access_token(token: str) -> Optional[int]:
             headers={"WWW-Authenticate": "bearer"}
         )
     except (jwt.JWTError, ValidationError) as e:
+        detail = f"validate token failed-{str(e)}"
         raise HttpException(
-            detail=str(e),
+            detail=detail,
             status_code=status.HTTP_401_UNAUTHORIZED,
             headers={"WWW-Authenticate": "bearer"}
         )
