@@ -12,8 +12,6 @@ from fastapi_template.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-ALGORITHM = "HS256"
-
 
 def create_access_token(data: TokenPayload, expires_delta: timedelta = None) -> TokenResponse:
     if not expires_delta:
@@ -39,7 +37,7 @@ def create_access_token(data: TokenPayload, expires_delta: timedelta = None) -> 
     return token_response
 
 
-async def verify_access_token(token: str) -> Optional[int]:
+async def verify_access_token(token: str) -> Optional[TokenPayload]:
     try:
         payload = jwt.decode(token,
                              key=settings.JWT_SECRET_KEY,
@@ -53,7 +51,7 @@ async def verify_access_token(token: str) -> Optional[int]:
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 headers={"WWW-Authenticate": "bearer"}
             )
-        token_data = TokenPayload(**payload)
+        token_payload = TokenPayload(**payload)
     except ExpiredSignatureError:
         detail = "Token expired"
         raise HttpException(
@@ -68,8 +66,7 @@ async def verify_access_token(token: str) -> Optional[int]:
             status_code=status.HTTP_401_UNAUTHORIZED,
             headers={"WWW-Authenticate": "bearer"}
         )
-    user_id = token_data.upn
-    return user_id
+    return token_payload
 
 
 def create_hash_password(password: str) -> str:

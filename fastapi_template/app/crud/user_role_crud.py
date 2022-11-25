@@ -5,13 +5,14 @@ from sqlmodel import select
 from sqlmodel.sql.expression import SelectOfScalar
 
 from fastapi_template.app.core.db import db
-from fastapi_template.app.crud.base_crud import BaseCrud
+from fastapi_template.app.crud.base_crud import BaseCrud, backward
 from fastapi_template.app.entity.user_role_entity import UserRoleCreateRequest, UserRoleUpdateRequest
 from fastapi_template.app.model import UserRole
 
 
 class UserRoleCrud(BaseCrud[UserRole, UserRoleCreateRequest, UserRoleUpdateRequest]):
 
+    @backward
     async def query_by_user_id(self,
                                *,
                                user_id: int,

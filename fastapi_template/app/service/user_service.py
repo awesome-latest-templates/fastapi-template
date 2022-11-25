@@ -18,6 +18,9 @@ class UserService:
         if not user_data:
             logger.warning(f'not found the user with user_id: {user_id}')
             return None
+        if not user_data.is_active:
+            logger.warning(f'user is not active: {user_id}')
+            return None
         user_role_data = await crud.user_role.query_by_user_id(user_id=user_id)
         if not user_role_data:
             role_names = []

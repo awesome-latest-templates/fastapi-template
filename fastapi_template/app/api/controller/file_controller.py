@@ -20,8 +20,8 @@ class FileController:
                           request: Request,
                           file: UploadFile = File(...),
                           file_size: int = Depends(deps.valid_content_length),
-                          user: UserDetail = Depends(get_current_user)) -> Response:
-        # payload data
+                          user: UserDetail = Depends(get_current_user())) -> Response:
+        # check file payload data
         if not file:
             return Response.fail(ResponseCode.BAD_REQUEST, "no upload file received")
         if not (user and user.id):

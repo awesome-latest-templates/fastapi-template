@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     # Swagger UI
     PROJECT_NAME: str = 'FastAPI_Template'
     API_PREFIX: str = "/api"
-    #
+    # file upload/download
     FILE_UPLOAD_FOLDER: str = "/Users/changyhu/static"
     FILE_URL_PREFIX: str = "/static"
     FILE_READ_CHUNK_SIZE: int = 1024  # 1kb
@@ -21,11 +21,13 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_ISSUER: str = PROJECT_NAME
     JWT_AUDIENCE: str = PROJECT_NAME
-    TOKEN_HEADER_NAME: str = 'Authorization'
+    JWT_TOKEN_HEADER_NAME: str = 'Authorization'
+    JWT_TOKEN_SCHEME_NAME: str = ''
     # BACKEND_CORS_ORIGINS is a JSON-formatted list of origins
     # e.g: '["http://localhost", "http://localhost:4200", "http://localhost:3000", \
     # "http://localhost:8080", "http://local.dockertoolbox.tiangolo.com"]'
     ALLOW_CORS_ORIGINS: List[str] = ["*"]
+    GZIP_MINIMUM_SIZE: int = 500
 
     @validator("ALLOW_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:

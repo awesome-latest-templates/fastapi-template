@@ -13,6 +13,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel.sql.expression import Select
 
 from fastapi_template.app.core.db import db
+from fastapi_template.app.core.db.session import MissingSessionError
 from fastapi_template.app.entity.common_entity import OrderEnum
 
 ModelType = TypeVar("ModelType", bound=SQLModel)
@@ -20,6 +21,24 @@ CreateEntityType = TypeVar("CreateEntityType", bound=BaseModel)
 UpdateEntityType = TypeVar("UpdateEntityType", bound=BaseModel)
 SchemaType = TypeVar("SchemaType", bound=BaseModel)
 T = TypeVar("T", bound=SQLModel)
+
+
+def backward(fun):
+    """
+    A class to catch the MissingSessionError for backward compatible
+    :param fun:
+    :return:
+    """
+
+    async def wrapper(*args, **kwargs):
+        try:
+            func = await fun(*args, **kwargs)
+        except MissingSessionError:
+            async with db():
+                func = await fun(db_session=db.session, *args, **kwargs)
+        return func
+
+    return wrapper
 
 
 class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
@@ -32,6 +51,7 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         """
         self.model = model
 
+    @backward
     async def get_by_id(self,
                         *,
                         item_id: Union[UUID, str, int],
@@ -48,6 +68,7 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         response = await db_session.execute(query)
         return response.scalar_one_or_none()
 
+    @backward
     async def get_by_ids(self,
                          *,
                          list_ids: List[Union[UUID, str, int]],

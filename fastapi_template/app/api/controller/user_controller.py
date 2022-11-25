@@ -13,5 +13,5 @@ router = InferringRouter()
 class UserRouter:
 
     @router.get("/detail")
-    async def get_user_detail(self, user: UserDetail = Depends(get_current_user)) -> Response:
+    async def get_user_detail(self, user: UserDetail = Depends(get_current_user())) -> Response:
         return Response.ok(user)

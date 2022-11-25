@@ -22,8 +22,7 @@ class AuthService:
         valid_password = verify_password(password, store_password)
         if not valid_password:
             raise HttpException(ResponseCode.BAD_REQUEST, "password is incorrect")
-        is_active = user_data.is_active == 1
-        if not is_active:
+        if not user_data.is_active:
             raise HttpException(ResponseCode.FORBIDDEN, "user is deactivate")
         # get user roles
         user_detail = await service.user.get_user_detail(user_id=user_data.id, user_data=user_data)

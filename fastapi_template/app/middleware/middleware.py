@@ -30,6 +30,8 @@ class GlobalMiddlewares:
                 "pool_pre_ping": True,
             },
         )
+        # gzip
+        # self.app.add_middleware(GZipMiddleware, minimum_size=settings.GZIP_MINIMUM_SIZE)
         # for logging
         self.app.add_middleware(CorrelationIdMiddleware,
                                 header_name='X-Request-ID',
@@ -37,3 +39,5 @@ class GlobalMiddlewares:
                                 validator=is_valid_uuid4,
                                 transformer=lambda a: a,
                                 )
+        # TODO: for jwt token verification, swagger security not works...???
+        # self.app.add_middleware(AuthenticationMiddleware, backend=JWTAuthenticationBackend())
