@@ -3,6 +3,7 @@ from uuid import uuid4
 from asgi_correlation_id.middleware import is_valid_uuid4, CorrelationIdMiddleware
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 
 from fastapi_template.app.core.db.session import SQLAlchemyMiddleware
 from fastapi_template.config import settings
@@ -31,7 +32,7 @@ class GlobalMiddlewares:
             },
         )
         # gzip
-        # self.app.add_middleware(GZipMiddleware, minimum_size=settings.GZIP_MINIMUM_SIZE)
+        self.app.add_middleware(GZipMiddleware, minimum_size=settings.GZIP_MINIMUM_SIZE)
         # for logging
         self.app.add_middleware(CorrelationIdMiddleware,
                                 header_name='X-Request-ID',
