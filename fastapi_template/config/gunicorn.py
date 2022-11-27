@@ -5,6 +5,7 @@ Resources:
 
 """
 import os
+from multiprocessing import cpu_count
 
 # Server socket
 #
@@ -76,7 +77,7 @@ backlog = 2048
 #
 #       True or False
 
-workers = int(os.getenv("FASTAPI_WORKERS", 2))
+workers = int(os.getenv("FASTAPI_WORKERS", cpu_count()))
 worker_class = "uvicorn.workers.UvicornWorker"
 worker_connections = 1000
 timeout = 30
@@ -167,7 +168,7 @@ access_log_format = os.getenv(
 #
 # Use custom class to make logs from Gunicorn be handled by Loguru
 #
-logger_class = "fastapi_template.app.core.log.logger.StubbedGunicornLogger"
+logger_class = "fastapi_template.app.core.log.logging.StubbedGunicornLogger"
 
 #
 # Process naming

@@ -42,7 +42,8 @@ class UserCrud(BaseCrud[User, UserCreateRequest, UserUpdateRequest]):
                             page: int = 0,
                             page_size: int = 50,
                             db_session: Optional[AsyncSession] = None) -> PageDataModel:
-        users = await self.execute(sql=f"SELECT * FROM User WHERE user_name like :name or nick_name like :name",
+        query = f"SELECT * FROM User WHERE (user_name like :name or nick_name like :name) and is_active=1"
+        users = await self.execute(sql=query,
                                    params={"name": f"%{name}%", "page": page, "size": page_size},
                                    entity=UserDetail,
                                    db_session=db_session

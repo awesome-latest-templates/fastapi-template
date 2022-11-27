@@ -18,3 +18,7 @@ RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; els
 
 ENV PYTHONPATH=/app
 EXPOSE 8000
+
+STOPSIGNAL SIGINT
+
+CMD ["serve", "--bind", "0.0.0.0:8000"]

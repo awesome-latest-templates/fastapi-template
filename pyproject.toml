@@ -51,7 +51,7 @@ pre-commit = "2.20.0"
 
 
 [tool.poetry.scripts]
-serve = 'fastapi_template.cli:cli'
+app = 'fastapi_template.cli:cli'
 
 [build-system]
 requires = ["poetry-core"]
