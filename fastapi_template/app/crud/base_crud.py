@@ -13,7 +13,7 @@ from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import TextClause
 
 from fastapi_template.app.core.db import db
-from fastapi_template.app.entity.common_entity import OrderEnum, PageDataModel
+from fastapi_template.app.entity.base_entity import OrderEnum, PageDataModel
 from fastapi_template.app.model.base_model import BaseSQLModel
 
 ModelType = TypeVar("ModelType", bound=BaseSQLModel)
@@ -33,6 +33,12 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         """
         self.model = model
 
+    async def get(self, query: Select,
+                  db_session: Optional[AsyncSession] = None) -> Optional[ModelType]:
+        db_session = db_session or db.session
+        response = await db_session.execute(query)
+        return response.scalar_one_or_none()
+
     async def get_by_id(self,
                         *,
                         item_id: Union[UUID, str, int],
@@ -44,10 +50,8 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         :param db_session:
         :return:
         """
-        db_session = db_session or db.session
         query = select(self.model).where(self.model.id == item_id)
-        response = await db_session.execute(query)
-        return response.scalar_one_or_none()
+        return await self.get(query=query, db_session=db_session)
 
     async def get_by_ids(self,
                          *,
@@ -256,7 +260,7 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
                      current_model: ModelType,
                      update_entity: Union[UpdateEntityType, Dict[str, Any], ModelType],
                      db_session: Optional[AsyncSession] = None,
-                     ) -> ModelType:
+                     ) -> Optional[ModelType]:
         """
         Update the item data by previous model data
         :param current_model:
@@ -264,15 +268,15 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         :param db_session:
         :return:
         """
+        if current_model is None:
+            return None
         db_session = db_session or db.session
         obj_data: dict = jsonable_encoder(current_model)
 
         if isinstance(update_entity, dict):
             update_data = update_entity
         else:
-            update_data = update_entity.dict(
-                exclude_unset=True
-            )  # This tells Pydantic to not include the values that were not sent
+            update_data = jsonable_encoder(update_entity, exclude_none=True)
         for field in obj_data:
             if field in update_data:
                 setattr(current_model, field, update_data[field])
@@ -289,7 +293,7 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
                            item_id: Union[UUID, str, int],
                            update_entity: Union[UpdateEntityType, Dict[str, Any], ModelType],
                            db_session: Optional[AsyncSession] = None,
-                           ) -> ModelType:
+                           ) -> Optional[ModelType]:
         """
         Update the item data by id
         :param item_id:
@@ -300,6 +304,8 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         """
         db_session = db_session or db.session
         current_entity: Optional[ModelType] = await self.get_by_id(item_id=item_id, db_session=db_session)
+        if current_entity is None:
+            return None
         update_result = await self.update(current_model=current_entity,
                                           update_entity=update_entity,
                                           db_session=db_session)
@@ -309,7 +315,7 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
                      *,
                      item_id: Union[UUID, str, int],
                      db_session: Optional[AsyncSession] = None
-                     ) -> ModelType:
+                     ) -> Optional[ModelType]:
         """
         Remove the item data by item id
         :param item_id:
@@ -319,7 +325,9 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         db_session = db_session or db.session
         query = select(self.model).where(self.model.id == item_id)
         response = await db_session.execute(query)
-        obj = response.scalar_one()
+        obj = response.scalar_one_or_none()
+        if obj is None:
+            return None
         await db_session.delete(obj)
         await db_session.commit()
         return obj
@@ -341,7 +349,8 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
             objs = []
             for item_id in item_ids:
                 obj = await self.delete(item_id=item_id, db_session=db_session)
-                objs.append(obj)
+                if obj:
+                    objs.append(obj)
             return objs
         except:
             await db_session.rollback()
@@ -378,7 +387,7 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
 
         response = await db_session.execute(raw_statement, params=params)
         results: List[RowMapping] = response.mappings().unique().all()
-        if entity is None and results:
+        if entity is None:
             return results
         # convert to pydantic object
         entities = list(map(lambda model: entity.parse_obj(model), results))

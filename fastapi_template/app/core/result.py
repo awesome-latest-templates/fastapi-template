@@ -7,6 +7,7 @@ from http import HTTPStatus
 import orjson
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import ORJSONResponse
+from orjson.orjson import OPT_UTC_Z
 from pydantic import BaseModel
 from starlette import status
 from starlette.background import BackgroundTask
@@ -44,7 +45,7 @@ class Response(ORJSONResponse):
     def render(self, content: typing.Any) -> bytes:
         assert orjson is not None, "orjson must be installed to use ORJSONResponse"
         return orjson.dumps(content,
-                            option=orjson.OPT_NON_STR_KEYS | orjson.OPT_SERIALIZE_NUMPY,
+                            option=orjson.OPT_NON_STR_KEYS | orjson.OPT_SERIALIZE_NUMPY | OPT_UTC_Z,
                             default=self.default_encode)
 
     @staticmethod

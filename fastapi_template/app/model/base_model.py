@@ -1,3 +1,5 @@
+import datetime
+
 from sqlalchemy import Column, Text, Integer, text
 from sqlalchemy.orm import declared_attr, declarative_base
 
@@ -16,10 +18,10 @@ class BaseSQLModel(Base):
         return cls.__name__
 
     id = Column(Integer, primary_key=True, default=gen.__next__)
-    create_time = Column(Text, nullable=False, server_default=text("''"))
-    update_time = Column(Text, nullable=False, server_default=text('CURRENT_TIMESTAMP'))
-    create_by = Column(Text, nullable=False, server_default=text("''"))
-    update_by = Column(Text, nullable=False, server_default=text("''"))
+    create_time = Column(Text, nullable=False, default="")
+    update_time = Column(Text, nullable=False, default=datetime.datetime.utcnow())
+    create_by = Column(Text, nullable=False, default="system")
+    update_by = Column(Text, nullable=False, default="system")
     is_active = Column(Integer, nullable=False, server_default=text('1'))
 
     def as_dict(self):

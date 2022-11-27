@@ -8,7 +8,7 @@ from starlette.responses import Response
 
 from fastapi_template.app.core.db import db
 from fastapi_template.app.crud.base_crud import BaseCrud
-from fastapi_template.app.entity.common_entity import PageDataModel
+from fastapi_template.app.entity.base_entity import PageDataModel
 from fastapi_template.app.entity.user_entity import UserCreateRequest, UserUpdateRequest, UserDetail
 from fastapi_template.app.model import User
 

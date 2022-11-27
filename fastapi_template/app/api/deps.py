@@ -22,7 +22,7 @@ def get_access_token(
     """
     if not token_value:
         raise HttpException(
-            detail="access-token is missing",
+            detail="Unauthorized Request",
             status_code=status.HTTP_401_UNAUTHORIZED
         )
 
@@ -47,17 +47,19 @@ async def get_token_data(access_token):
 def get_current_user(roles: list = None):
     async def current_user(access_token: str = Depends(get_access_token)) -> UserDetail:
         user_detail = await get_token_data(access_token)
-        user_role = user_detail.role
-        if roles and not user_role:
-            raise HttpException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not enough permissions"
-            )
-        if roles and not set(roles).issubset(set(user_role)):
-            raise HttpException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Role {str(roles)}  is required for this action",
-            )
+        user_roles = user_detail.role
+        if roles:
+            is_valid_role = False
+            for role in roles:
+                if role in user_roles:
+                    is_valid_role = True
+                    break
+
+            if not is_valid_role:
+                raise HttpException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Not enough permissions"
+                )
         return user_detail
 
     return current_user

@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from fastapi_template.app.entity.common_entity import PageParamModel
+from fastapi_template.app.entity.base_entity import PageParamModel
 
 
 class FileCreateRequest(BaseModel):

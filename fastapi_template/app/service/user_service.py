@@ -1,14 +1,38 @@
-from typing import Optional, Dict
+import copy
+from typing import Optional, Dict, Any
 
 from fastapi_cache.decorator import cache
 from fastapi_pagination import Page
+from sqlalchemy import select, and_
 
 from fastapi_template.app import crud
-from fastapi_template.app.entity.user_entity import UserDetail, UserSearchRequest
+from fastapi_template.app.core import ResponseCode
+from fastapi_template.app.core.auth.security import create_hash_password
+from fastapi_template.app.entity.base_entity import IdResponse
+from fastapi_template.app.entity.user_entity import UserDetail, UserSearchRequest, UserCreateRequest, UserUpdateRequest
+from fastapi_template.app.exception import HttpException
 from fastapi_template.app.model import User
 
 
 class UserService:
+
+    async def create_user(self, create_user: UserCreateRequest, create_by: Any = None):
+        new_user = copy.deepcopy(create_user)
+        query = select(User).where(and_(User.user_name == create_user.user_name, User.is_active == 1))
+        data = await crud.user.get(query=query)
+        if data:
+            raise HttpException(code=ResponseCode.DATA_DUPLICATED, detail="user already exists")
+        new_user.password = create_hash_password(create_user.password)
+        created_user = await crud.user.add(create_entity=new_user, created_by=create_by)
+        resp = IdResponse(id=created_user.id)
+        return resp
+
+    async def update_user(self, update_user: UserUpdateRequest, update_by: Any = None):
+        item_id = update_user.id
+        new_user = UserUpdateRequest.create_model(update_by=update_by)(**update_user.dict())
+        updated_user = await crud.user.update_by_id(item_id=item_id, update_entity=new_user)
+        resp = IdResponse(id=updated_user.id)
+        return resp
 
     @cache()
     async def get_user_detail(self, user_id: int, user_data: User = None) -> Optional[Dict]:

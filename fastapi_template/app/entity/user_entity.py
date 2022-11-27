@@ -1,17 +1,21 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from fastapi_template.app.entity.common_entity import PageParamModel
+from fastapi_template.app.entity.base_entity import PageParamModel, BaseEntityModel
 
 
 class UserCreateRequest(BaseModel):
-    pass
+    user_name: str = Field(..., min_length=5)
+    password: str = Field(..., min_length=6)
 
 
-class UserUpdateRequest(UserCreateRequest):
+class UserUpdateRequest(BaseEntityModel):
     id: str
+    nick_name: str = None
+    avatar: str = None
+    email: str = None
 
 
-class UserDetail(BaseModel):
+class UserDetail(BaseEntityModel):
     id: int = 0
     user_name: str = None
     nick_name: str = None
@@ -19,9 +23,6 @@ class UserDetail(BaseModel):
     avatar: str = None
     email: str = None
     role: list = []
-
-    class Config:
-        orm_mode = True
 
 
 class UserSearchRequest(PageParamModel):
