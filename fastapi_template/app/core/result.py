@@ -50,6 +50,8 @@ class Response(ORJSONResponse):
     def default_encode(obj: typing.Any):
         if isinstance(obj, decimal.Decimal):
             return str(obj)
+        if isinstance(obj, BaseModel):
+            return obj.dict(exclude_defaults=True, exclude_none=True)
         return str(obj)
 
     @staticmethod

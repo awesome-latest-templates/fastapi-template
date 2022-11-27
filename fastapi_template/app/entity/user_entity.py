@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+from fastapi_template.app.entity.common_entity import PageParamModel
+
 
 class UserCreateRequest(BaseModel):
     pass
@@ -17,3 +19,10 @@ class UserDetail(BaseModel):
     avatar: str = None
     email: str = None
     role: list = []
+
+    class Config:
+        orm_mode = True
+
+
+class UserSearchRequest(PageParamModel):
+    name: str = None

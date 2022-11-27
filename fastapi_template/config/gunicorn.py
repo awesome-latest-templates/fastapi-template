@@ -23,7 +23,10 @@ import os
 #       range.
 #
 
-bind = os.getenv("FASTAPI_BIND", "127.0.0.1:8000")
+bind = "{host}:{port}".format(
+    host=os.getenv("FASTAPI_HOST", "127.0.0.1"),
+    port=os.getenv("FASTAPI_PORT", "8000"),
+)
 backlog = 2048
 
 #
@@ -161,6 +164,10 @@ access_log_format = os.getenv(
     "FASTAPI_GUNICORN_LOG_FORMAT",
     '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"',
 )
+#
+# Use custom class to make logs from Gunicorn be handled by Loguru
+#
+logger_class = "fastapi_template.app.core.log.logger.StubbedGunicornLogger"
 
 #
 # Process naming

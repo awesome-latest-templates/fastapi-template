@@ -1,12 +1,11 @@
 """Application implementation - custom FastAPI HTTP exception with handler."""
 from typing import Any, Optional, Dict
 
-from asgi_correlation_id import correlation_id
 from fastapi import Request
+from loguru import logger
 from starlette import status
 
 from fastapi_template.app.core import ResponseCode, Response
-from fastapi_template.app.core.log import logger
 
 
 class HttpException(Exception):
@@ -78,14 +77,8 @@ async def http_exception_handler(request: Request, exception: HttpException):
             kwargs from custom HTTPException.
 
     """
-    headers = {
-        'X-Request-ID': correlation_id.get() or "",
-        'Access-Control-Expose-Headers': 'X-Request-ID'
-    }
-    if exception.headers:
-        headers.update(exception.headers)
-
-    logger.exception(f'Unhandled exception', exception=exception)
+    logger.exception("Unhandled exception")
+    headers = getattr(exception, "headers", None)
     return Response.fail(code=exception.code,
                          status_code=exception.status_code,
                          message=str(exception.detail),

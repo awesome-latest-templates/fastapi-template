@@ -38,7 +38,7 @@ class AuthService:
         return token_resp
 
     async def save_login_data(self, previous_user_data, update_user_data):
-        user_data = await crud.user.update(current_entity=previous_user_data, update_entity=update_user_data)
+        user_data = await crud.user.update(current_model=previous_user_data, update_entity=update_user_data)
         return user_data
 
 

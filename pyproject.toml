@@ -25,24 +25,27 @@ python = "^3.10.8"
 fastapi = "^0.87.0"
 uvicorn = { version = "^0.20.0", extras = ["standard"] }
 gunicorn = "^20.1.0"
-rich = "^12.6.0"
-orjson = "^3.8.2"
-python-multipart = "^0.0.5"
-sqlmodel = "^0.0.8"
-aiosqlite = "^0.17.0"
-structlog = "^22.2.0"
+loguru = "^0.6.0"
 asgi-correlation-id = "^3.2.1"
+orjson = "^3.8.2"
+sqlalchemy = "^1.4.44"
+sqlalchemy2-stubs = "^0.0.2a29"
+aiosqlite = "^0.17.0"
+python-multipart = "^0.0.5"
+aiofiles = "^22.1.0"
 python-jose = { version = "^3.3.0", extras = ["cryptography"] }
 passlib = { version = "^1.7.4", extras = ["bcrypt"] }
 fastapi-pagination = "^0.10.0"
 fastapi-cache2 = "^0.1.9"
 asyncer = "^0.0.2"
 apscheduler = "^3.9.1.post1"
-aiofiles = "^22.1.0"
+
+
 
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.2.0"
+pytest-asyncio = "^0.20.2"
 flake8 = "^5.0.4"
 pre-commit = "2.20.0"
 
@@ -53,3 +56,6 @@ serve = 'fastapi_template.cli:cli'
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest]
+asyncio_mode = "auto"

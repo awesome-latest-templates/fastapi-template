@@ -1,6 +1,5 @@
 from .base_model import BaseSQLModel
 from .file_model import FileInfo
-from .logging_model import Logging
 from .menu_model import Menu
 from .project_member_model import ProjectMember
 from .project_model import Project

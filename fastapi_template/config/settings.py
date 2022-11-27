@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = 'FastAPI_Template'
     API_PREFIX: str = "/api"
     # file upload/download
-    FILE_UPLOAD_FOLDER: str = "/Users/changyhu/static"
+    FILE_UPLOAD_FOLDER: str = ""
     FILE_URL_PREFIX: str = "/static"
     FILE_READ_CHUNK_SIZE: int = 1024  # 1kb
     FILE_MAX_SIZE: int = 5 * 1024 * 1024  # 100MB

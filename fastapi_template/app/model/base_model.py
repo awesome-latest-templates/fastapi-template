@@ -1,36 +1,23 @@
-from datetime import datetime
-from typing import Optional
-
-from sqlalchemy import Column, Text, Integer
-from sqlalchemy.orm import declared_attr
-from sqlmodel import SQLModel as _SQLModel, Field
+from sqlalchemy import Column, Text, Integer, text
+from sqlalchemy.orm import declared_attr, declarative_base
 
 from fastapi_template.app.util.snowflake import SnowflakeGenerator
 from fastapi_template.config import settings
 
+Base = declarative_base()
 gen = SnowflakeGenerator(settings.SNOWFLAKE_INSTANCE)
 
 
-class SQLModel(_SQLModel):
+class BaseSQLModel(Base):
+    __abstract__ = True
+
     @declared_attr  # type: ignore
     def __tablename__(cls) -> str:
         return cls.__name__
 
-
-class BaseSQLModel(SQLModel):
-    id: Optional[int] = Field(
-        default_factory=gen.__next__,
-        primary_key=True,
-        index=True,
-        nullable=False,
-    )
-    create_time: Optional[str] = Field(
-        sa_column=Column('create_time', Text, nullable=False))
-    update_time: Optional[str] = Field(
-        sa_column=Column('update_time', Text, nullable=False), default=datetime.utcnow())
-    create_by: Optional[str] = Field(
-        sa_column=Column('create_by', Text, nullable=False), default="system")
-    update_by: Optional[str] = Field(
-        sa_column=Column('update_by', Text, nullable=False), default="system")
-    is_active: int = Field(
-        sa_column=Column('is_active', Integer, nullable=False), default=1)
+    id = Column(Integer, primary_key=True, default=gen.__next__)
+    create_time = Column(Text, nullable=False, server_default=text("''"))
+    update_time = Column(Text, nullable=False, server_default=text('CURRENT_TIMESTAMP'))
+    create_by = Column(Text, nullable=False, server_default=text("''"))
+    update_by = Column(Text, nullable=False, server_default=text("''"))
+    is_active = Column(Integer, nullable=False, server_default=text('1'))
