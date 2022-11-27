@@ -21,3 +21,6 @@ class BaseSQLModel(Base):
     create_by = Column(Text, nullable=False, server_default=text("''"))
     update_by = Column(Text, nullable=False, server_default=text("''"))
     is_active = Column(Integer, nullable=False, server_default=text('1'))
+
+    def as_dict(self):
+        return {c.name: str(getattr(self, c.name)) for c in self.__table__.columns}

@@ -5,6 +5,7 @@ from datetime import datetime
 from http import HTTPStatus
 
 import orjson
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel
 from starlette import status
@@ -50,9 +51,7 @@ class Response(ORJSONResponse):
     def default_encode(obj: typing.Any):
         if isinstance(obj, decimal.Decimal):
             return str(obj)
-        if isinstance(obj, BaseModel):
-            return obj.dict(exclude_defaults=True, exclude_none=True)
-        return str(obj)
+        return jsonable_encoder(obj, exclude_unset=True, exclude_none=True)
 
     @staticmethod
     def ok(data: typing.Any = None,

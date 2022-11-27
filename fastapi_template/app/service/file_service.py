@@ -4,14 +4,17 @@ from pathlib import Path
 
 import aiofiles
 from fastapi import UploadFile
+from fastapi_pagination import Params, Page
 from loguru import logger
 from starlette import status
 from starlette.requests import Request
 
 from fastapi_template.app import crud
 from fastapi_template.app.core import ResponseCode
-from fastapi_template.app.entity.file_entity import FileCreateRequest, FileResponse
+from fastapi_template.app.entity.common_entity import OrderEnum
+from fastapi_template.app.entity.file_entity import FileCreateRequest, FileResponse, FileSearchRequest
 from fastapi_template.app.exception import HttpException
+from fastapi_template.app.model import FileInfo
 from fastapi_template.config import settings
 
 
@@ -51,6 +54,13 @@ class FileService:
         access_url = f"{str(request.base_url)[:-1]}{file_url}"
         resp = FileResponse(file_key=file_key, file_url=access_url, upload_time=created_file.update_time)
         return resp
+
+    async def list_files(self, search: FileSearchRequest) -> Page[FileInfo]:
+        page_num = search.page
+        page_size = search.size
+        params = Params(page=page_num, size=page_size)
+        results: Page[FileInfo] = await crud.file.list_paginated_ordered(params=params, order=OrderEnum.descendent)
+        return results
 
 
 file = FileService()

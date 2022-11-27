@@ -65,9 +65,9 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         response = await db_session.execute(query)
         return response.scalars().all()
 
-    async def get_count(self,
-                        db_session: Optional[AsyncSession] = None,
-                        ) -> Optional[ModelType]:
+    async def count(self,
+                    db_session: Optional[AsyncSession] = None,
+                    ) -> Optional[ModelType]:
         """
         Get the item data count
         :param db_session:
@@ -78,11 +78,11 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         response = await db_session.execute(query)
         return response.scalar_one()
 
-    async def get_list(self,
-                       *,
-                       query: Optional[Select] = None,
-                       db_session: Optional[AsyncSession] = None,
-                       ) -> List[ModelType]:
+    async def list(self,
+                   *,
+                   query: Optional[Select] = None,
+                   db_session: Optional[AsyncSession] = None,
+                   ) -> List[ModelType]:
         """
         Get all the item data
         :param offset:
@@ -92,18 +92,18 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         :return:
         """
         db_session = db_session or db.session
-        if not query:
+        if query is None:
             query = select(self.model).order_by(self.model.id)
         response = await db_session.execute(query)
         return response.scalars().all()
 
-    async def get_list_ordered(self,
-                               *,
-                               query: Optional[Select] = None,
-                               order_by: Optional[str] = None,
-                               order: Optional[OrderEnum] = OrderEnum.descendent,
-                               db_session: Optional[AsyncSession] = None,
-                               ) -> List[ModelType]:
+    async def list_ordered(self,
+                           *,
+                           query: Optional[Select] = None,
+                           order_by: Optional[str] = None,
+                           order: Optional[OrderEnum] = OrderEnum.descendent,
+                           db_session: Optional[AsyncSession] = None,
+                           ) -> List[ModelType]:
         """
         Get all the Item data and order by
         :param order_by:
@@ -116,10 +116,10 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         db_session = db_session or db.session
         columns = self.model.__table__.columns
 
-        if order_by not in columns or not order_by:
+        if (order_by and order_by not in columns) or order_by is None:
             order_by = self.model.id
 
-        if not query:
+        if query is None:
             query = (
                 select(self.model)
                 .order_by(columns[order_by].asc())
@@ -133,12 +133,12 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         response = await db_session.execute(query)
         return response.scalars().all()
 
-    async def get_list_paginated(self,
-                                 *,
-                                 params: Optional[Params] = Params(),
-                                 query: Optional[Select] = None,
-                                 db_session: Optional[AsyncSession] = None,
-                                 ) -> Page[ModelType]:
+    async def list_paginated(self,
+                             *,
+                             query: Optional[Select] = None,
+                             params: Optional[Params] = Params(),
+                             db_session: Optional[AsyncSession] = None,
+                             ) -> Page[ModelType]:
         """
         Get all the item data with pagination
         :param params:
@@ -151,14 +151,14 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
             query = select(self.model)
         return await paginate(db_session, query, params)  # type: ignore
 
-    async def get_list_paginated_ordered(self,
-                                         *,
-                                         params: Optional[Params] = Params(),
-                                         query: Optional[Select] = None,
-                                         order_by: Optional[str] = None,
-                                         order: Optional[OrderEnum] = OrderEnum.descendent,
-                                         db_session: Optional[AsyncSession] = None,
-                                         ) -> Page[ModelType]:
+    async def list_paginated_ordered(self,
+                                     *,
+                                     query: Optional[Select] = None,
+                                     params: Optional[Params] = Params(),
+                                     order_by: Optional[str] = None,
+                                     order: Optional[OrderEnum] = OrderEnum.descendent,
+                                     db_session: Optional[AsyncSession] = None,
+                                     ) -> Page[ModelType]:
         """
         Get all the item data with pagination and order
         :param params:
@@ -171,14 +171,14 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         db_session = db_session or db.session
         columns = self.model.__table__.columns
 
-        if order_by not in columns or not order_by:
+        if (order_by and order_by not in columns) or order_by is None:
             order_by = self.model.id
 
-        if not query:
+        if query is None:
             if order == OrderEnum.ascendent:
-                query = select(self.model).order_by(columns[order_by].asc())
+                query = select(self.model).order_by(order_by.asc())
             else:
-                query = select(self.model).order_by(columns[order_by].desc())
+                query = select(self.model).order_by(order_by.desc())
 
         return await paginate(db_session, query, params)  # type: ignore
 
@@ -305,7 +305,7 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
                                           db_session=db_session)
         return update_result
 
-    async def remove(self,
+    async def delete(self,
                      *,
                      item_id: Union[UUID, str, int],
                      db_session: Optional[AsyncSession] = None
@@ -324,7 +324,7 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         await db_session.commit()
         return obj
 
-    async def remove_all(self,
+    async def delete_all(self,
                          *,
                          item_ids: Union[List[UUID], List[str], List[int]],
                          db_session: Optional[AsyncSession] = None
@@ -340,7 +340,7 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         try:
             objs = []
             for item_id in item_ids:
-                obj = await self.remove(item_id=item_id, db_session=db_session)
+                obj = await self.delete(item_id=item_id, db_session=db_session)
                 objs.append(obj)
             return objs
         except:
@@ -378,7 +378,7 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
 
         response = await db_session.execute(raw_statement, params=params)
         results: List[RowMapping] = response.mappings().unique().all()
-        if not entity and results:
+        if entity is None and results:
             return results
         # convert to pydantic object
         entities = list(map(lambda model: entity.parse_obj(model), results))

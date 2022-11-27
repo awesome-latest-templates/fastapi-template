@@ -7,6 +7,7 @@ from fastapi_template.app.api.deps import get_current_user
 from fastapi_template.app.core import Response, ResponseCode
 from fastapi_template.app.core.cvb import cbv
 from fastapi_template.app.core.inferring_router import InferringRouter
+from fastapi_template.app.entity.file_entity import FileSearchRequest
 from fastapi_template.app.entity.user_entity import UserDetail
 
 router = InferringRouter()
@@ -29,3 +30,8 @@ class FileController:
         user_id = user.id
         resp = await service.file.upload_file(request=request, file=file, file_size=file_size, user_id=user_id)
         return Response.ok(resp)
+
+    @router.post("/list")
+    async def list_file(self, search: FileSearchRequest, user: UserDetail = Depends(get_current_user())) -> Response:
+        files = await service.file.list_files(search)
+        return Response.ok(files)

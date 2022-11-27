@@ -7,6 +7,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from pprint import pformat
+from typing import TypedDict
 
 from asgi_correlation_id import correlation_id
 from gunicorn.glogging import Logger
@@ -28,7 +29,7 @@ except Exception as ex:
 #   https://loguru.readthedocs.io/en/stable/api/logger.html#sink
 
 
-def set_log_extras(record):
+def set_log_extras(record: TypedDict):
     """set_log_extras [summary].
     [extended_summary]
     Args:
@@ -104,17 +105,17 @@ class InterceptHandler(logging.Handler):
         logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
 
 
-def format_record(record: dict) -> str:
-    """Return an custom format for loguru loggers.
+def format_record(record: TypedDict) -> str:
+    """Return a custom format for loguru loggers.
     Uses pformat for log any data like request/response body
     >>> [   {   'count': 2,
     >>>         'users': [   {'age': 87, 'is_active': True, 'name': 'Nick'},
     >>>                      {'age': 27, 'is_active': True, 'name': 'Alex'}]}]
     """
     format_string = "<green>{extra[datetime]}</green> | "
-    format_string += "<green>{extra[app_name]}</green> | "
-    format_string += "<green>{extra[host]}</green> | "
-    format_string += "<green>{extra[pid]}</green> | "
+    # format_string += "<green>{extra[app_name]}</green> | "
+    # format_string += "<green>{extra[host]}</green> | "
+    # format_string += "<green>{extra[pid]}</green> | "
     format_string += "<green>{extra[request_id]}</green> | "
     format_string += "<level>{level}</level> | "
     format_string += "<cyan>{name}</cyan>:"
