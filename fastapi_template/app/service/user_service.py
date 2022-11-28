@@ -1,9 +1,13 @@
 import copy
 from typing import Optional, Dict, Any
 
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_cache.decorator import cache
 from fastapi_pagination import Page
 from sqlalchemy import select, and_
+from starlette.requests import Request
+from starlette.responses import Response
 
 from fastapi_template.app import crud
 from fastapi_template.app.core import ResponseCode
@@ -13,6 +17,22 @@ from fastapi_template.app.model import User, Role
 from fastapi_template.app.schema.base_schema import IdResponse
 from fastapi_template.app.schema.user_schema import UserDetailResponse, UserSearchRequest, UserCreateRequest, \
     UserUpdateRequest, UserRoleRequest
+from fastapi_template.config import constants
+
+
+def cache_key_builder(
+        func,
+        namespace: Optional[str] = "",
+        request: Request = None,
+        response: Response = None,
+        *args,
+        **kwargs,
+):
+    prefix = FastAPICache.get_prefix()
+    user_id = kwargs['kwargs'].get("user_id") if kwargs['kwargs'].get("user_id", None) else (
+        f"{func.__module__}:{func.__name__}:{args}:{kwargs}")
+    cache_key = f"{namespace}:{prefix}:{user_id}"
+    return cache_key
 
 
 class UserService:
@@ -44,7 +64,7 @@ class UserService:
         resp = IdResponse(id=user.id)
         return resp
 
-    @cache()
+    @cache(key_builder=cache_key_builder, namespace=constants.CACHE_USER_NAMESPACE)
     async def get_user_detail(self, user_id: int, user_data: User = None) -> Optional[Dict]:
         # get user roles
         if user_data is None:
@@ -81,8 +101,15 @@ class UserService:
         role_ids = list(map(lambda a: a.id, role_data))
         if role_ids is None:
             raise HttpException(code=ResponseCode.NOT_FOUND, detail="roles not exist")
-        data = await crud.user_role.add_user_role(user_id=user_id, roles=role_ids, created_by=create_by)
-        return data
+        if len(role_ids) != len(roles):
+            raise HttpException(code=ResponseCode.BAD_REQUEST, detail="invalid role data")
+        created_data = await crud.user_role.add_user_role(user_id=user_id, roles=role_ids, created_by=create_by)
+        resp = list(map(lambda a: IdResponse(id=a.id), created_data))
+        # TODO explicit refresh the user role cache
+        backend: InMemoryBackend = FastAPICache.get_backend()
+        cache_key = f"{FastAPICache.get_prefix()}:{user_id}"
+        count = await backend.clear(namespace=constants.CACHE_USER_NAMESPACE, key=cache_key)
+        return resp
 
 
 user = UserService()

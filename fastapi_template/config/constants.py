@@ -1,0 +1,1 @@
+CACHE_USER_NAMESPACE = "user"

@@ -81,5 +81,5 @@ async def http_exception_handler(request: Request, exception: HttpException):
     headers = getattr(exception, "headers", None)
     return Response.fail(code=exception.code,
                          status_code=exception.status_code,
-                         message=str(exception.detail),
+                         message=str(exception.detail) if exception.detail else exception.code.description,
                          headers=headers)

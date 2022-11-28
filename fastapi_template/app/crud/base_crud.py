@@ -7,7 +7,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi_pagination import Params, Page
 from fastapi_pagination.ext.async_sqlalchemy import paginate
 from pydantic import BaseModel
-from sqlalchemy import func, select, text
+from sqlalchemy import func, select, text, delete
 from sqlalchemy.engine import RowMapping
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Select
@@ -319,14 +319,9 @@ class BaseCrud(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         :return:
         """
         db_session = db_session or db.session
-        query = select(self.model).where(self.model.id == item_id)
+        query = delete(self.model).where(self.model.id == item_id)
         response = await db_session.execute(query)
-        obj = response.scalar_one_or_none()
-        if obj is None:
-            return None
-        await db_session.delete(obj)
-        await db_session.commit()
-        return obj
+        return response
 
     async def delete_all(self,
                          *,
@@ -340,16 +335,9 @@ class BaseCrud(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         :return:
         """
         db_session = db_session or db.session
-        await db_session.begin()
-        try:
-            objs = []
-            for item_id in item_ids:
-                obj = await self.delete(item_id=item_id, db_session=db_session)
-                if obj:
-                    objs.append(obj)
-            return objs
-        except:
-            await db_session.rollback()
+        query = delete(self.model).where(self.model.id.in_(item_ids))
+        obj = await db_session.execute(query)
+        return obj
 
     async def inactive(self,
                        *,

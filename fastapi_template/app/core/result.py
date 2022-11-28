@@ -20,10 +20,10 @@ class ResponseCode(enum.Enum):
         self.description = description
 
     # refer
-    SUCCESS = (0, "Request fulfilled, document follows")
-    BAD_REQUEST = (400, "Bad request syntax or unsupported method")
-    UNAUTHORIZED = (401, "No permission -- see authorization schemes")
-    FORBIDDEN = (403, "Request forbidden -- authorization will not help")
+    SUCCESS = (0, "OK", "Request fulfilled, document follows")
+    BAD_REQUEST = (400, "Bad request", "Bad request syntax or unsupported method")
+    UNAUTHORIZED = (401, "No permission", "No permission -- see authorization schemes")
+    FORBIDDEN = (403, "permission denies", "Request forbidden -- authorization will not help")
     NOT_FOUND = (404, 'Not Found', 'Nothing matches the given URI')
     DATA_DUPLICATED = (409, 'Conflict', 'Request data duplicated')
     DATA_UNPROCESSABLED = (422, 'Un-Processable Entity', 'The server cannot process your request')

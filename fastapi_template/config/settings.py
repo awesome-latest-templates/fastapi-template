@@ -44,7 +44,7 @@ class Settings(BaseSettings):
 
     USE_REDIS: bool = False
     # cache
-    CACHE_PREFIX: str = "fastapi"
+    CACHE_PREFIX: str = "app"
     CACHE_EXPIRED_SECONDS: int = 600
     # snowflake
     SNOWFLAKE_INSTANCE: int = 10
