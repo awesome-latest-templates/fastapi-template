@@ -6,7 +6,8 @@ from passlib.context import CryptContext
 from pydantic import ValidationError
 from starlette import status
 
-from fastapi_template.app.exception import HttpException
+from fastapi_template.app.exception.handler import HttpException
+from fastapi_template.app.exception.status import ResponseCode
 from fastapi_template.app.schema.auth_schema import TokenPayload, TokenResponse
 from fastapi_template.config import settings
 
@@ -45,27 +46,12 @@ async def verify_access_token(token: str) -> Optional[TokenPayload]:
                              audience=settings.JWT_AUDIENCE,
                              issuer=settings.JWT_ISSUER)
         if not payload.get("upn"):
-            detail = "Cannot validate token user data"
-            raise HttpException(
-                detail=detail,
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                headers={"WWW-Authenticate": "bearer"}
-            )
+            raise HttpException(code=ResponseCode.UNAUTHORIZED, status_code=status.HTTP_401_UNAUTHORIZED)
         token_payload = TokenPayload(**payload)
     except ExpiredSignatureError:
-        detail = "Token expired"
-        raise HttpException(
-            detail=detail,
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            headers={"WWW-Authenticate": "bearer"}
-        )
+        raise HttpException(code=ResponseCode.TOKEN_EXPIRED, status_code=status.HTTP_401_UNAUTHORIZED)
     except (jwt.JWTError, ValidationError) as e:
-        detail = f"validate token failed-{str(e)}"
-        raise HttpException(
-            detail=detail,
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            headers={"WWW-Authenticate": "bearer"}
-        )
+        raise HttpException(code=ResponseCode.TOKEN_VALIDATE_FAILED, status_code=status.HTTP_401_UNAUTHORIZED)
     return token_payload
 
 

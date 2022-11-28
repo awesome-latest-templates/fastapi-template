@@ -16,7 +16,7 @@ router = InferringRouter()
 @cbv(router)
 class FileController:
 
-    @router.post("/upload")
+    @router.post("/upload", tags=["file"])
     async def upload_file(self,
                           request: Request,
                           file: UploadFile = File(...),
@@ -31,7 +31,7 @@ class FileController:
         resp = await service.file.upload_file(request=request, file=file, file_size=file_size, user_id=user_id)
         return Response.ok(resp)
 
-    @router.post("/list")
+    @router.post("/list", tags=["file"])
     async def list_file(self, search: FileSearchRequest,
                         user: UserDetailResponse = Depends(get_current_user())) -> Response:
         files = await service.file.list_files(search)

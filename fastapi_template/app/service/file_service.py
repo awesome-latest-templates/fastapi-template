@@ -5,14 +5,13 @@ from pathlib import Path
 import aiofiles
 from fastapi import UploadFile
 from fastapi_pagination import Params, Page
-from loguru import logger
 from sqlalchemy import select
 from starlette import status
 from starlette.requests import Request
 
 from fastapi_template.app import crud
 from fastapi_template.app.core import ResponseCode
-from fastapi_template.app.exception import HttpException
+from fastapi_template.app.exception.handler import HttpException
 from fastapi_template.app.model import FileInfo
 from fastapi_template.app.schema.file_schema import FileCreateRequest, FileResponse, FileSearchRequest
 from fastapi_template.config import settings
@@ -33,16 +32,11 @@ class FileService:
                 while content := await file.read(settings.FILE_READ_CHUNK_SIZE):  # async read chunk
                     upload_file_size += len(content)
                     if upload_file_size > file_size:
-                        raise HttpException(
-                            code=ResponseCode.BAD_REQUEST,
-                            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                            detail="File size exceeded the maximum allowed",
-                        )
+                        raise HttpException(code=ResponseCode.FILE_SIZE_EXCEEDED,
+                                            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
                     await out_file.write(content)  # async write chunk
-            msg = f"Successfully uploaded {file.filename} for processing"
         except IOError:
-            msg = "There was an error uploading your file"
-        logger.info(msg)
+            raise HttpException(code=ResponseCode.SYSTEM_ERROR)
         # save into database
         file_url = f"{settings.FILE_URL_PREFIX}/{new_file_name}"
         file_schema = FileCreateRequest(file_key=file_key,

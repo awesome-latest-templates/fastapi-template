@@ -12,7 +12,7 @@ from starlette.responses import Response
 from fastapi_template.app import crud
 from fastapi_template.app.core import ResponseCode
 from fastapi_template.app.core.auth.security import create_hash_password
-from fastapi_template.app.exception import HttpException
+from fastapi_template.app.exception.handler import HttpException
 from fastapi_template.app.model import User, Role
 from fastapi_template.app.schema.base_schema import IdResponse
 from fastapi_template.app.schema.user_schema import UserDetailResponse, UserSearchRequest, UserCreateRequest, \
@@ -42,7 +42,7 @@ class UserService:
         query = select(User).where(and_(User.user_name == create_user.user_name, User.is_active == 1))
         data = await crud.user.get(query=query)
         if data:
-            raise HttpException(code=ResponseCode.DATA_DUPLICATED, detail="user already exists")
+            raise HttpException(code=ResponseCode.USER_ALREADY_EXIST)
         new_user.password = create_hash_password(create_user.password)
         created_user = await crud.user.add(create_schema=new_user, created_by=create_by)
         resp = IdResponse(id=created_user.id)
@@ -53,14 +53,14 @@ class UserService:
         new_user = UserUpdateRequest.create_model(update_by=update_by)(**update_user.dict())
         updated_user = await crud.user.update_by_id(item_id=item_id, update_schema=new_user)
         if updated_user is None:
-            raise HttpException(code=ResponseCode.NOT_FOUND, detail="not found user")
+            raise HttpException(code=ResponseCode.USER_NOT_FOUND)
         resp = IdResponse(id=updated_user.id)
         return resp
 
     async def inactive_user(self, user_id: int, update_by: None):
         user = await crud.user.inactive(item_id=user_id, update_by=update_by)
         if user is None:
-            raise HttpException(code=ResponseCode.NOT_FOUND, detail="user not exists")
+            raise HttpException(code=ResponseCode.USER_NOT_FOUND)
         resp = IdResponse(id=user.id)
         return resp
 
@@ -95,14 +95,14 @@ class UserService:
         roles = user_role.roles
         user_data = await crud.user.get_by_id(item_id=user_id)
         if user_data is None:
-            raise HttpException(code=ResponseCode.NOT_FOUND, detail="user not exists")
+            raise HttpException(code=ResponseCode.USER_NOT_FOUND)
         query = select(Role).where(Role.name.in_(roles))
         role_data = await crud.role.list(query=query)
         role_ids = list(map(lambda a: a.id, role_data))
         if role_ids is None:
-            raise HttpException(code=ResponseCode.NOT_FOUND, detail="roles not exist")
+            raise HttpException(code=ResponseCode.ROLE_NOT_FOUND)
         if len(role_ids) != len(roles):
-            raise HttpException(code=ResponseCode.BAD_REQUEST, detail="invalid role data")
+            raise HttpException(code=ResponseCode.USER_ROLE_INVALID)
         created_data = await crud.user_role.add_user_role(user_id=user_id, roles=role_ids, created_by=create_by)
         resp = list(map(lambda a: IdResponse(id=a.id), created_data))
         # TODO explicit refresh the user role cache

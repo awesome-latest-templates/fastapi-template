@@ -4,7 +4,7 @@ from typing import Optional
 from fastapi_template.app import model, crud, service
 from fastapi_template.app.core import ResponseCode
 from fastapi_template.app.core.auth.security import create_access_token, verify_password
-from fastapi_template.app.exception import HttpException
+from fastapi_template.app.exception.handler import HttpException
 from fastapi_template.app.schema.auth_schema import TokenPayload, TokenResponse, AuthLoginRequest
 
 
@@ -14,16 +14,16 @@ class AuthService:
         username = form_data.username
         password = form_data.password
         if not (username and password):
-            raise HttpException(ResponseCode.BAD_REQUEST, "username or password is empty")
+            raise HttpException(ResponseCode.USER_PASSWORD_EMPTY)
         user_data: Optional[model.User] = await crud.user.query_by_username(username=username)
         if not user_data:
-            raise HttpException(ResponseCode.NOT_FOUND, "not found associated user")
+            raise HttpException(ResponseCode.USER_NOT_FOUND)
         store_password = user_data.password
         valid_password = verify_password(password, store_password)
         if not valid_password:
-            raise HttpException(ResponseCode.BAD_REQUEST, "password is incorrect")
+            raise HttpException(ResponseCode.USER_PASSWORD_INVALID)
         if not user_data.is_active:
-            raise HttpException(ResponseCode.FORBIDDEN, "user is deactivate")
+            raise HttpException(ResponseCode.USER_DISABLED)
         # get user roles
         user_detail = await service.user.get_user_detail(user_id=user_data.id, user_data=user_data)
         # create the oauth jwt token

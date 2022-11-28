@@ -1,8 +1,6 @@
 import decimal
-import enum
 import typing
 from datetime import datetime
-from http import HTTPStatus
 
 import orjson
 from fastapi.encoders import jsonable_encoder
@@ -12,23 +10,7 @@ from pydantic import BaseModel
 from starlette import status
 from starlette.background import BackgroundTask
 
-
-class ResponseCode(enum.Enum):
-    def __init__(self, code, phrase, description=''):
-        self.code = code
-        self.phrase = phrase
-        self.description = description
-
-    # refer
-    SUCCESS = (0, "OK", "Request fulfilled, document follows")
-    BAD_REQUEST = (400, "Bad request", "Bad request syntax or unsupported method")
-    UNAUTHORIZED = (401, "No permission", "No permission -- see authorization schemes")
-    FORBIDDEN = (403, "permission denies", "Request forbidden -- authorization will not help")
-    NOT_FOUND = (404, 'Not Found', 'Nothing matches the given URI')
-    DATA_DUPLICATED = (409, 'Conflict', 'Request data duplicated')
-    DATA_UNPROCESSABLED = (422, 'Un-Processable Entity', 'The server cannot process your request')
-    UNHANDLED_ERROR = (110, 'Unhandled Error', "Met exception but server not handled")
-    INTERNAL_SERVER_ERROR = (500, HTTPStatus.INTERNAL_SERVER_ERROR.phrase, HTTPStatus.INTERNAL_SERVER_ERROR.description)
+from fastapi_template.app.exception.status import ResponseCode
 
 
 class Response(ORJSONResponse):

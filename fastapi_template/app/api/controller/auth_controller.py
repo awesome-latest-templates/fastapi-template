@@ -9,7 +9,7 @@ router = InferringRouter()
 @cbv(router)
 class AuthController:
 
-    @router.post("/login", name="Create access token via username and password")
+    @router.post("/login", name="Create access token via username and password", tags=["auth"])
     async def create_token_async(self, form_data: AuthLoginRequest) -> TokenResponse:
         token_data = await service.auth.create_token_async(form_data)
         return token_data

@@ -9,7 +9,7 @@ from fastapi_template.app.api.router import api_router
 from fastapi_template.app.core.db.session import SQLAlchemyMiddleware
 from fastapi_template.app.core.log.logging import CustomizeLogger
 from fastapi_template.app.core.static import mount_static
-from fastapi_template.app.exception import http_exception_handler, HttpException
+from fastapi_template.app.exception.handler import HttpException, http_exception_handler
 from fastapi_template.config import settings
 
 
