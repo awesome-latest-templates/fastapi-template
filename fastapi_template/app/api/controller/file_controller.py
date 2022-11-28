@@ -8,7 +8,7 @@ from fastapi_template.app.core import Response, ResponseCode
 from fastapi_template.app.core.cvb import cbv
 from fastapi_template.app.core.inferring_router import InferringRouter
 from fastapi_template.app.entity.file_entity import FileSearchRequest
-from fastapi_template.app.entity.user_entity import UserDetail
+from fastapi_template.app.entity.user_entity import UserDetailResponse
 
 router = InferringRouter()
 
@@ -21,7 +21,7 @@ class FileController:
                           request: Request,
                           file: UploadFile = File(...),
                           file_size: int = Depends(deps.valid_content_length),
-                          user: UserDetail = Depends(get_current_user())) -> Response:
+                          user: UserDetailResponse = Depends(get_current_user())) -> Response:
         # check file payload data
         if not file:
             return Response.fail(ResponseCode.BAD_REQUEST, "no upload file received")
@@ -32,6 +32,7 @@ class FileController:
         return Response.ok(resp)
 
     @router.post("/list")
-    async def list_file(self, search: FileSearchRequest, user: UserDetail = Depends(get_current_user())) -> Response:
+    async def list_file(self, search: FileSearchRequest,
+                        user: UserDetailResponse = Depends(get_current_user())) -> Response:
         files = await service.file.list_files(search)
         return Response.ok(files)

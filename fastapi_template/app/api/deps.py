@@ -6,7 +6,7 @@ from starlette import status
 
 from fastapi_template.app import service
 from fastapi_template.app.core.auth.security import verify_access_token
-from fastapi_template.app.entity.user_entity import UserDetail
+from fastapi_template.app.entity.user_entity import UserDetailResponse
 from fastapi_template.app.exception import HttpException
 from fastapi_template.config import settings
 
@@ -40,12 +40,12 @@ async def get_token_data(access_token):
             status_code=status.HTTP_401_UNAUTHORIZED,
             headers={"WWW-Authenticate": "bearer"}
         )
-    user_detail = UserDetail(**user_detail)
+    user_detail = UserDetailResponse(**user_detail)
     return user_detail
 
 
 def get_current_user(roles: list = None):
-    async def current_user(access_token: str = Depends(get_access_token)) -> UserDetail:
+    async def current_user(access_token: str = Depends(get_access_token)) -> UserDetailResponse:
         user_detail = await get_token_data(access_token)
         user_roles = user_detail.role
         if roles:

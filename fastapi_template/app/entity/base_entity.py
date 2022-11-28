@@ -17,12 +17,12 @@ class TokenType(str, Enum):
     REFRESH = "refresh_token"
 
 
-class PageParamModel(BaseModel):
+class BasePageParamModel(BaseModel):
     page: int = 1
     size: int = 50
 
 
-class PageDataModel(BaseModel):
+class BasePageResponseModel(BaseModel):
     total: int = 0
     items: list = []
     page: conint(ge=1)  # type: ignore
@@ -49,5 +49,9 @@ class BaseEntityModel(BaseModel):
         orm_mode = True
 
 
+class IdRequest(BaseEntityModel):
+    id: int
+
+
 class IdResponse(BaseEntityModel):
-    id: str
+    id: int

@@ -1,3 +1,4 @@
+import copy
 from datetime import datetime
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 from uuid import UUID
@@ -13,7 +14,7 @@ from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import TextClause
 
 from fastapi_template.app.core.db import db
-from fastapi_template.app.entity.base_entity import OrderEnum, PageDataModel
+from fastapi_template.app.entity.base_entity import OrderEnum, BasePageResponseModel
 from fastapi_template.app.model.base_model import BaseSQLModel
 
 ModelType = TypeVar("ModelType", bound=BaseSQLModel)
@@ -55,9 +56,9 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
 
     async def get_by_ids(self,
                          *,
-                         list_ids: List[Union[UUID, str, int]],
+                         list_ids: List[UUID | str | int],
                          db_session: Optional[AsyncSession] = None,
-                         ) -> Optional[List[ModelType]]:
+                         ) -> List[ModelType]:
         """
         Get the item data by ids
         :param list_ids:
@@ -110,6 +111,7 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
                            ) -> List[ModelType]:
         """
         Get all the Item data and order by
+        :param query:
         :param order_by:
         :param order:
         :param offset:
@@ -189,7 +191,7 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
     async def add(self,
                   *,
                   create_entity: Union[CreateEntityType, Dict[str, Any], ModelType],
-                  created_by: Optional[Union[UUID, str, int]] = None,
+                  created_by: Optional[UUID | str | int] = None,
                   db_session: Optional[AsyncSession] = None,
                   ) -> ModelType:
         """
@@ -219,8 +221,8 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
 
     async def add_all(self,
                       *,
-                      create_entities: Union[List[CreateEntityType], List[Dict[str, Any]], List[ModelType]],
-                      created_by: Optional[Union[UUID, str, int]] = None,
+                      create_entities: List[CreateEntityType | Dict[str, Any] | ModelType],
+                      created_by: Optional[UUID | str | int] = None,
                       db_session: Optional[AsyncSession] = None,
                       ) -> List[ModelType]:
         """
@@ -231,29 +233,24 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         :return:
         """
         db_session = db_session or db.session
-        await db_session.begin()
-        try:
-            db_objs = []
-            for create_entity in create_entities:
-                db_model = create_entity
-                if isinstance(create_entity, BaseModel):
-                    create_entity = jsonable_encoder(create_entity)
-                    db_model = self.model(**create_entity)
-                elif isinstance(create_entity, dict):
-                    create_entity = create_entity
-                    db_model = self.model(**create_entity)  # type: ignore
-                db_model.create_time = datetime.utcnow()
-                db_model.update_time = datetime.utcnow()
-                if created_by:
-                    db_model.create_by = created_by
-                db_objs.append(db_model)
+        db_objs = []
+        for create_entity in create_entities:
+            db_model = create_entity
+            if isinstance(create_entity, BaseModel):
+                create_entity = jsonable_encoder(create_entity)
+                db_model = self.model(**create_entity)
+            elif isinstance(create_entity, dict):
+                create_entity = create_entity
+                db_model = self.model(**create_entity)  # type: ignore
+            db_model.create_time = datetime.utcnow()
+            db_model.update_time = datetime.utcnow()
+            if created_by:
+                db_model.create_by = created_by
+            db_objs.append(db_model)
 
-            db_session.add_all(db_objs)
-            await db_session.commit()
-            await db_session.refresh(db_objs)
-            return db_objs
-        except:
-            await db_session.rollback()
+        db_session.add_all(db_objs)
+        await db_session.commit()
+        return db_objs
 
     async def update(self,
                      *,
@@ -334,7 +331,7 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
 
     async def delete_all(self,
                          *,
-                         item_ids: Union[List[UUID], List[str], List[int]],
+                         item_ids: List[UUID | str | int],
                          db_session: Optional[AsyncSession] = None
                          ) -> List[ModelType]:
         """
@@ -355,12 +352,35 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         except:
             await db_session.rollback()
 
+    async def inactive(self,
+                       *,
+                       item_id: Union[UUID, str, int],
+                       update_by: Optional[Union[UUID, str, int]] = None,
+                       db_session: Optional[AsyncSession] = None
+                       ) -> Optional[ModelType]:
+        """
+        Remove the item data by item id
+        :param update_by:
+        :param item_id:
+        :param db_session:
+        :return:
+        """
+        db_session = db_session or db.session
+        current_entity: Optional[ModelType] = await self.get_by_id(item_id=item_id, db_session=db_session)
+        if current_entity is None:
+            return None
+        update_entity = copy.deepcopy(current_entity)
+        update_entity.is_active = 0
+        if update_by:
+            update_entity.update_by = update_by
+        return await self.update(current_model=current_entity, update_entity=update_entity)
+
     async def execute(self,
                       sql: str,
                       params: dict = None,
                       entity: EntityType = None,
                       db_session: Optional[AsyncSession] = None
-                      ) -> Union[List[EntityType], PageDataModel, List[RowMapping]]:
+                      ) -> Union[List[EntityType | RowMapping], BasePageResponseModel]:
         """
         Execute the raw sql
         :param sql: raw native sql statement
@@ -393,5 +413,5 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         entities = list(map(lambda model: entity.parse_obj(model), results))
         if not is_pagination:
             return entities
-        page_entities = PageDataModel(total=total, page=page_num, size=page_size, items=entities)
+        page_entities = BasePageResponseModel(total=total, page=page_num, size=page_size, items=entities)
         return page_entities

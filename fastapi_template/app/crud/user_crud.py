@@ -8,8 +8,8 @@ from starlette.responses import Response
 
 from fastapi_template.app.core.db import db
 from fastapi_template.app.crud.base_crud import BaseCrud
-from fastapi_template.app.entity.base_entity import PageDataModel
-from fastapi_template.app.entity.user_entity import UserCreateRequest, UserUpdateRequest, UserDetail
+from fastapi_template.app.entity.base_entity import BasePageResponseModel
+from fastapi_template.app.entity.user_entity import UserCreateRequest, UserUpdateRequest, UserDetailResponse
 from fastapi_template.app.model import User
 
 
@@ -41,11 +41,11 @@ class UserCrud(BaseCrud[User, UserCreateRequest, UserUpdateRequest]):
                             name: str,
                             page: int = 0,
                             page_size: int = 50,
-                            db_session: Optional[AsyncSession] = None) -> PageDataModel:
+                            db_session: Optional[AsyncSession] = None) -> BasePageResponseModel:
         query = f"SELECT * FROM User WHERE (user_name like :name or nick_name like :name) and is_active=1"
         users = await self.execute(sql=query,
                                    params={"name": f"%{name}%", "page": page, "size": page_size},
-                                   entity=UserDetail,
+                                   entity=UserDetailResponse,
                                    db_session=db_session
                                    )
         return users

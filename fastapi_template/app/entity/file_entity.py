@@ -1,9 +1,7 @@
-from pydantic import BaseModel
-
-from fastapi_template.app.entity.base_entity import PageParamModel
+from fastapi_template.app.entity.base_entity import BasePageParamModel, BaseEntityModel
 
 
-class FileCreateRequest(BaseModel):
+class FileCreateRequest(BaseEntityModel):
     file_key: str
     file_url: str
     file_name: str
@@ -11,15 +9,15 @@ class FileCreateRequest(BaseModel):
     content_type: str
 
 
-class FileUpdateRequest(BaseModel):
+class FileUpdateRequest(BaseEntityModel):
     pass
 
 
-class FileSearchRequest(PageParamModel):
+class FileSearchRequest(BasePageParamModel):
     pass
 
 
-class FileResponse(BaseModel):
+class FileResponse(BaseEntityModel):
     file_key: str = None
     file_url: str = None
     upload_time: str = None

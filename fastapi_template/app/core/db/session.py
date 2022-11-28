@@ -1,8 +1,9 @@
+from asyncio import current_task
 from contextvars import ContextVar
 from typing import Optional, Union, Dict
 
 from sqlalchemy.engine import URL, Engine
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_scoped_session
 from sqlalchemy.orm import sessionmaker
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
@@ -63,7 +64,8 @@ class SQLAlchemyMiddleware(BaseHTTPMiddleware):
             engine = custom_engine
 
         global _Session
-        _Session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False, **session_args)
+        async_session_factory = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False, **session_args)
+        _Session = async_scoped_session(async_session_factory, scopefunc=current_task)
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
         async with db(commit_on_exit=self.commit_on_exit):
@@ -96,7 +98,7 @@ class DBSession(metaclass=DBSessionMeta):
         self.token = _session.set(_Session(**self.session_args))  # type: ignore
 
     async def __aenter__(self):
-        if not isinstance(_Session, sessionmaker):
+        if not isinstance(_Session, async_scoped_session):
             raise SessionNotInitialisedError
 
         await self._init_session()
