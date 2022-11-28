@@ -1,21 +1,21 @@
 from pydantic import Field
 
-from fastapi_template.app.entity.base_entity import BasePageParamModel, BaseEntityModel
+from fastapi_template.app.schema.base_schema import BasePageParamModel, BaseSchemaModel
 
 
-class UserCreateRequest(BaseEntityModel):
+class UserCreateRequest(BaseSchemaModel):
     user_name: str = Field(..., min_length=5)
     password: str = Field(..., min_length=6)
 
 
-class UserUpdateRequest(BaseEntityModel):
+class UserUpdateRequest(BaseSchemaModel):
     id: str
     nick_name: str = None
     avatar: str = None
     email: str = None
 
 
-class UserDetailResponse(BaseEntityModel):
+class UserDetailResponse(BaseSchemaModel):
     id: int = 0
     user_name: str = None
     nick_name: str = None
@@ -29,6 +29,6 @@ class UserSearchRequest(BasePageParamModel):
     name: str = ""
 
 
-class UserRoleRequest(BaseEntityModel):
+class UserRoleRequest(BaseSchemaModel):
     user_id: int
     roles: list = []

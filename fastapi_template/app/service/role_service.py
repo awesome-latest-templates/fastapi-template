@@ -5,23 +5,23 @@ from sqlalchemy import select, and_, text
 
 from fastapi_template.app import crud
 from fastapi_template.app.core import ResponseCode
-from fastapi_template.app.entity.base_entity import IdResponse
-from fastapi_template.app.entity.role_entity import RoleCreateRequest, RoleSearchRequest, RoleUpdateRequest
 from fastapi_template.app.exception import HttpException
 from fastapi_template.app.model import Role
+from fastapi_template.app.schema.base_schema import IdResponse
+from fastapi_template.app.schema.role_schema import RoleCreateRequest, RoleSearchRequest, RoleUpdateRequest
 
 
 class RoleService:
 
     async def create_role(self, role_create: RoleCreateRequest, create_by=None):
-        created_role = await crud.role.add(create_entity=role_create, created_by=create_by)
+        created_role = await crud.role.add(create_schema=role_create, created_by=create_by)
         resp = IdResponse(id=created_role.id)
         return resp
 
     async def update_role(self, update_role: RoleUpdateRequest, update_by: Any = None):
         item_id = update_role.id
         new_role = update_role.create_model(update_by=update_by)(**update_role.dict())
-        updated_role = await crud.role.update_by_id(item_id=item_id, update_entity=new_role)
+        updated_role = await crud.role.update_by_id(item_id=item_id, update_schema=new_role)
         if updated_role is None:
             raise HttpException(code=ResponseCode.NOT_FOUND, detail="not found role")
         resp = IdResponse(id=updated_role.id)

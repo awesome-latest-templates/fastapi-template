@@ -29,7 +29,7 @@ class BasePageResponseModel(BaseModel):
     size: conint(ge=1)  # type: ignore
 
 
-class BaseEntityModel(BaseModel):
+class BaseSchemaModel(BaseModel):
 
     @classmethod
     def create_model(cls, **field_definitions):
@@ -49,9 +49,9 @@ class BaseEntityModel(BaseModel):
         orm_mode = True
 
 
-class IdRequest(BaseEntityModel):
+class IdRequest(BaseSchemaModel):
     id: int
 
 
-class IdResponse(BaseEntityModel):
+class IdResponse(BaseSchemaModel):
     id: int

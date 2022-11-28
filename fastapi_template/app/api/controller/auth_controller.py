@@ -1,7 +1,7 @@
 from fastapi_template.app import service
 from fastapi_template.app.core.cvb import cbv
 from fastapi_template.app.core.inferring_router import InferringRouter
-from fastapi_template.app.entity.auth_entity import TokenResponse, AuthLoginRequest
+from fastapi_template.app.schema.auth_schema import TokenResponse, AuthLoginRequest
 
 router = InferringRouter()
 

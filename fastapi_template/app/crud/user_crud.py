@@ -8,9 +8,9 @@ from starlette.responses import Response
 
 from fastapi_template.app.core.db import db
 from fastapi_template.app.crud.base_crud import BaseCrud
-from fastapi_template.app.entity.base_entity import BasePageResponseModel
-from fastapi_template.app.entity.user_entity import UserCreateRequest, UserUpdateRequest, UserDetailResponse
 from fastapi_template.app.model import User
+from fastapi_template.app.schema.base_schema import BasePageResponseModel
+from fastapi_template.app.schema.user_schema import UserCreateRequest, UserUpdateRequest, UserDetailResponse
 
 
 def cache_key_builder(
@@ -45,7 +45,7 @@ class UserCrud(BaseCrud[User, UserCreateRequest, UserUpdateRequest]):
         query = f"SELECT * FROM User WHERE (user_name like :name or nick_name like :name) and is_active=1"
         users = await self.execute(sql=query,
                                    params={"name": f"%{name}%", "page": page, "size": page_size},
-                                   entity=UserDetailResponse,
+                                   schema=UserDetailResponse,
                                    db_session=db_session
                                    )
         return users

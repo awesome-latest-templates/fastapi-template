@@ -12,9 +12,9 @@ from starlette.requests import Request
 
 from fastapi_template.app import crud
 from fastapi_template.app.core import ResponseCode
-from fastapi_template.app.entity.file_entity import FileCreateRequest, FileResponse, FileSearchRequest
 from fastapi_template.app.exception import HttpException
 from fastapi_template.app.model import FileInfo
+from fastapi_template.app.schema.file_schema import FileCreateRequest, FileResponse, FileSearchRequest
 from fastapi_template.config import settings
 
 
@@ -45,12 +45,12 @@ class FileService:
         logger.info(msg)
         # save into database
         file_url = f"{settings.FILE_URL_PREFIX}/{new_file_name}"
-        file_entity = FileCreateRequest(file_key=file_key,
+        file_schema = FileCreateRequest(file_key=file_key,
                                         file_url=file_url,
                                         file_name=new_file_name,
                                         file_size=upload_file_size,
                                         content_type=file_content_type)
-        created_file = await crud.file.add(create_entity=file_entity, created_by=user_id)
+        created_file = await crud.file.add(create_schema=file_schema, created_by=user_id)
         access_url = f"{str(request.base_url)[:-1]}{file_url}"
         resp = FileResponse(file_key=file_key, file_url=access_url, upload_time=created_file.update_time)
         return resp

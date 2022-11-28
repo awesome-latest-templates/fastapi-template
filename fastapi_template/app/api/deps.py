@@ -6,8 +6,8 @@ from starlette import status
 
 from fastapi_template.app import service
 from fastapi_template.app.core.auth.security import verify_access_token
-from fastapi_template.app.entity.user_entity import UserDetailResponse
 from fastapi_template.app.exception import HttpException
+from fastapi_template.app.schema.user_schema import UserDetailResponse
 from fastapi_template.config import settings
 
 access_token_header = APIKeyHeader(name=settings.JWT_TOKEN_HEADER_NAME, auto_error=False)

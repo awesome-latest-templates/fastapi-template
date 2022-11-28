@@ -5,9 +5,9 @@ from fastapi_template.app.api.deps import get_current_user
 from fastapi_template.app.core import Response
 from fastapi_template.app.core.cvb import cbv
 from fastapi_template.app.core.inferring_router import InferringRouter
-from fastapi_template.app.entity.base_entity import IdRequest
-from fastapi_template.app.entity.role_entity import RoleCreateRequest, RoleSearchRequest, RoleUpdateRequest
-from fastapi_template.app.entity.user_entity import UserDetailResponse
+from fastapi_template.app.schema.base_schema import IdRequest
+from fastapi_template.app.schema.role_schema import RoleCreateRequest, RoleSearchRequest, RoleUpdateRequest
+from fastapi_template.app.schema.user_schema import UserDetailResponse
 from fastapi_template.config import roles
 
 router = InferringRouter()

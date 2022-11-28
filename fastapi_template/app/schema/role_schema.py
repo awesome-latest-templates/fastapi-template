@@ -1,9 +1,9 @@
 from pydantic import Field
 
-from fastapi_template.app.entity.base_entity import BaseEntityModel, BasePageParamModel
+from fastapi_template.app.schema.base_schema import BaseSchemaModel, BasePageParamModel
 
 
-class RoleCreateRequest(BaseEntityModel):
+class RoleCreateRequest(BaseSchemaModel):
     name: str = Field(..., min_length=4)
     description: str = Field(..., min_length=5)
 

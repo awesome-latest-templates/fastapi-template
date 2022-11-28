@@ -8,11 +8,11 @@ from sqlalchemy import select, and_
 from fastapi_template.app import crud
 from fastapi_template.app.core import ResponseCode
 from fastapi_template.app.core.auth.security import create_hash_password
-from fastapi_template.app.entity.base_entity import IdResponse
-from fastapi_template.app.entity.user_entity import UserDetailResponse, UserSearchRequest, UserCreateRequest, \
-    UserUpdateRequest, UserRoleRequest
 from fastapi_template.app.exception import HttpException
 from fastapi_template.app.model import User, Role
+from fastapi_template.app.schema.base_schema import IdResponse
+from fastapi_template.app.schema.user_schema import UserDetailResponse, UserSearchRequest, UserCreateRequest, \
+    UserUpdateRequest, UserRoleRequest
 
 
 class UserService:
@@ -24,14 +24,14 @@ class UserService:
         if data:
             raise HttpException(code=ResponseCode.DATA_DUPLICATED, detail="user already exists")
         new_user.password = create_hash_password(create_user.password)
-        created_user = await crud.user.add(create_entity=new_user, created_by=create_by)
+        created_user = await crud.user.add(create_schema=new_user, created_by=create_by)
         resp = IdResponse(id=created_user.id)
         return resp
 
     async def update_user(self, update_user: UserUpdateRequest, update_by: Any = None):
         item_id = update_user.id
         new_user = UserUpdateRequest.create_model(update_by=update_by)(**update_user.dict())
-        updated_user = await crud.user.update_by_id(item_id=item_id, update_entity=new_user)
+        updated_user = await crud.user.update_by_id(item_id=item_id, update_schema=new_user)
         if updated_user is None:
             raise HttpException(code=ResponseCode.NOT_FOUND, detail="not found user")
         resp = IdResponse(id=updated_user.id)
@@ -65,10 +65,10 @@ class UserService:
         return user_detail.dict()
 
     async def get_users(self, user_request: UserSearchRequest) -> Page[UserDetailResponse]:
-        entities = await crud.user.get_user_list(name=user_request.name,
-                                                 page=user_request.page,
-                                                 page_size=user_request.size)
-        return entities
+        schemas = await crud.user.get_user_list(name=user_request.name,
+                                                page=user_request.page,
+                                                page_size=user_request.size)
+        return schemas
 
     async def assign_role(self, user_role: UserRoleRequest, create_by: int = None):
         user_id = user_role.user_id

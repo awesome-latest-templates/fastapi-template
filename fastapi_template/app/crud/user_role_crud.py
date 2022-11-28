@@ -5,9 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi_template.app.core.db import db
 from fastapi_template.app.crud.base_crud import BaseCrud
-from fastapi_template.app.entity.base_entity import IdResponse
-from fastapi_template.app.entity.user_role_entity import UserRoleCreateRequest, UserRoleUpdateRequest
 from fastapi_template.app.model import UserRole
+from fastapi_template.app.schema.base_schema import IdResponse
+from fastapi_template.app.schema.user_role_schema import UserRoleCreateRequest, UserRoleUpdateRequest
 
 
 class UserRoleCrud(BaseCrud[UserRole, UserRoleCreateRequest, UserRoleUpdateRequest]):
@@ -33,7 +33,7 @@ class UserRoleCrud(BaseCrud[UserRole, UserRoleCreateRequest, UserRoleUpdateReque
                 "role_id": role
             })
 
-        created_data = await self.add_all(create_entities=user_role_data,
+        created_data = await self.add_all(create_schemas=user_role_data,
                                           created_by=created_by,
                                           db_session=db_session)
         resp = list(map(lambda a: IdResponse(id=a.id), created_data))

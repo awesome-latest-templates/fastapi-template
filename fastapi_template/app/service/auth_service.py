@@ -4,8 +4,8 @@ from typing import Optional
 from fastapi_template.app import model, crud, service
 from fastapi_template.app.core import ResponseCode
 from fastapi_template.app.core.auth.security import create_access_token, verify_password
-from fastapi_template.app.entity.auth_entity import TokenPayload, TokenResponse, AuthLoginRequest
 from fastapi_template.app.exception import HttpException
+from fastapi_template.app.schema.auth_schema import TokenPayload, TokenResponse, AuthLoginRequest
 
 
 class AuthService:
@@ -38,7 +38,7 @@ class AuthService:
         return token_resp
 
     async def save_login_data(self, previous_user_data, update_user_data):
-        user_data = await crud.user.update(current_model=previous_user_data, update_entity=update_user_data)
+        user_data = await crud.user.update(current_model=previous_user_data, update_schema=update_user_data)
         return user_data
 
 

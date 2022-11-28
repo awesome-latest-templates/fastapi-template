@@ -14,23 +14,23 @@ from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import TextClause
 
 from fastapi_template.app.core.db import db
-from fastapi_template.app.entity.base_entity import OrderEnum, BasePageResponseModel
 from fastapi_template.app.model.base_model import BaseSQLModel
+from fastapi_template.app.schema.base_schema import OrderEnum, BasePageResponseModel
 
 ModelType = TypeVar("ModelType", bound=BaseSQLModel)
-CreateEntityType = TypeVar("CreateEntityType", bound=BaseModel)
-UpdateEntityType = TypeVar("UpdateEntityType", bound=BaseModel)
-EntityType = TypeVar("EntityType", bound=BaseModel)
+CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
+UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
+SchemaType = TypeVar("SchemaType", bound=BaseModel)
 T = TypeVar("T", bound=BaseSQLModel)
 
 
-class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
+class BaseCrud(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def __init__(self, model: Type[ModelType]):
         """
         CRUD object with default methods to Create, Read, Update, Delete (CRUD).
         **Parameters**
         * `model`: A SQLModel model class
-        * `entity`: A Pydantic model (entity) class
+        * `schema`: A Pydantic model (schema) class
         """
         self.model = model
 
@@ -190,25 +190,25 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
 
     async def add(self,
                   *,
-                  create_entity: Union[CreateEntityType, Dict[str, Any], ModelType],
+                  create_schema: Union[CreateSchemaType, Dict[str, Any], ModelType],
                   created_by: Optional[UUID | str | int] = None,
                   db_session: Optional[AsyncSession] = None,
                   ) -> ModelType:
         """
         Create the item data
-        :param create_entity:
+        :param create_schema:
         :param created_by:
         :param db_session:
         :return:
         """
         db_session = db_session or db.session
-        db_obj = create_entity
-        if isinstance(create_entity, BaseModel):
-            create_entity = jsonable_encoder(create_entity)
-            db_obj = self.model(**create_entity)
-        elif isinstance(create_entity, dict):
-            create_entity = create_entity
-            db_obj = self.model(**create_entity)  # type: ignore
+        db_obj = create_schema
+        if isinstance(create_schema, BaseModel):
+            create_schema = jsonable_encoder(create_schema)
+            db_obj = self.model(**create_schema)
+        elif isinstance(create_schema, dict):
+            create_schema = create_schema
+            db_obj = self.model(**create_schema)  # type: ignore
         db_obj.create_time = datetime.utcnow()
         db_obj.update_time = datetime.utcnow()
         if created_by:
@@ -221,27 +221,27 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
 
     async def add_all(self,
                       *,
-                      create_entities: List[CreateEntityType | Dict[str, Any] | ModelType],
+                      create_schemas: List[CreateSchemaType | Dict[str, Any] | ModelType],
                       created_by: Optional[UUID | str | int] = None,
                       db_session: Optional[AsyncSession] = None,
                       ) -> List[ModelType]:
         """
         Batch to create the item data
-        :param create_entities:
+        :param create_schemas:
         :param created_by:
         :param db_session:
         :return:
         """
         db_session = db_session or db.session
         db_objs = []
-        for create_entity in create_entities:
-            db_model = create_entity
-            if isinstance(create_entity, BaseModel):
-                create_entity = jsonable_encoder(create_entity)
-                db_model = self.model(**create_entity)
-            elif isinstance(create_entity, dict):
-                create_entity = create_entity
-                db_model = self.model(**create_entity)  # type: ignore
+        for create_schema in create_schemas:
+            db_model = create_schema
+            if isinstance(create_schema, BaseModel):
+                create_schema = jsonable_encoder(create_schema)
+                db_model = self.model(**create_schema)
+            elif isinstance(create_schema, dict):
+                create_schema = create_schema
+                db_model = self.model(**create_schema)  # type: ignore
             db_model.create_time = datetime.utcnow()
             db_model.update_time = datetime.utcnow()
             if created_by:
@@ -255,13 +255,13 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
     async def update(self,
                      *,
                      current_model: ModelType,
-                     update_entity: Union[UpdateEntityType, Dict[str, Any], ModelType],
+                     update_schema: Union[UpdateSchemaType, Dict[str, Any], ModelType],
                      db_session: Optional[AsyncSession] = None,
                      ) -> Optional[ModelType]:
         """
         Update the item data by previous model data
         :param current_model:
-        :param update_entity:
+        :param update_schema:
         :param db_session:
         :return:
         """
@@ -270,10 +270,10 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         db_session = db_session or db.session
         obj_data: dict = jsonable_encoder(current_model)
 
-        if isinstance(update_entity, dict):
-            update_data = update_entity
+        if isinstance(update_schema, dict):
+            update_data = update_schema
         else:
-            update_data = jsonable_encoder(update_entity, exclude_none=True)
+            update_data = jsonable_encoder(update_schema, exclude_none=True)
         for field in obj_data:
             if field in update_data:
                 setattr(current_model, field, update_data[field])
@@ -288,23 +288,22 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
     async def update_by_id(self,
                            *,
                            item_id: Union[UUID, str, int],
-                           update_entity: Union[UpdateEntityType, Dict[str, Any], ModelType],
+                           update_schema: Union[UpdateSchemaType, Dict[str, Any], ModelType],
                            db_session: Optional[AsyncSession] = None,
                            ) -> Optional[ModelType]:
         """
         Update the item data by id
         :param item_id:
-        :param current_entity:
-        :param update_entity:
+        :param update_schema:
         :param db_session:
         :return:
         """
         db_session = db_session or db.session
-        current_entity: Optional[ModelType] = await self.get_by_id(item_id=item_id, db_session=db_session)
-        if current_entity is None:
+        current_model: Optional[ModelType] = await self.get_by_id(item_id=item_id, db_session=db_session)
+        if current_model is None:
             return None
-        update_result = await self.update(current_model=current_entity,
-                                          update_entity=update_entity,
+        update_result = await self.update(current_model=current_model,
+                                          update_schema=update_schema,
                                           db_session=db_session)
         return update_result
 
@@ -366,25 +365,25 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
         :return:
         """
         db_session = db_session or db.session
-        current_entity: Optional[ModelType] = await self.get_by_id(item_id=item_id, db_session=db_session)
-        if current_entity is None:
+        current_model: Optional[ModelType] = await self.get_by_id(item_id=item_id, db_session=db_session)
+        if current_model is None:
             return None
-        update_entity = copy.deepcopy(current_entity)
-        update_entity.is_active = 0
+        update_schema = copy.deepcopy(current_model)
+        update_schema.is_active = 0
         if update_by:
-            update_entity.update_by = update_by
-        return await self.update(current_model=current_entity, update_entity=update_entity)
+            update_schema.update_by = update_by
+        return await self.update(current_model=current_model, update_schema=update_schema)
 
     async def execute(self,
                       sql: str,
                       params: dict = None,
-                      entity: EntityType = None,
+                      schema: SchemaType = None,
                       db_session: Optional[AsyncSession] = None
-                      ) -> Union[List[EntityType | RowMapping], BasePageResponseModel]:
+                      ) -> Union[List[SchemaType | RowMapping], BasePageResponseModel]:
         """
         Execute the raw sql
         :param sql: raw native sql statement
-        :param entity: pydantic entity object
+        :param schema: pydantic schema object
         :param params: the sql parameters
         :param db_session:
         :return:
@@ -407,11 +406,11 @@ class BaseCrud(Generic[ModelType, CreateEntityType, UpdateEntityType]):
 
         response = await db_session.execute(raw_statement, params=params)
         results: List[RowMapping] = response.mappings().unique().all()
-        if entity is None:
+        if schema is None:
             return results
         # convert to pydantic object
-        entities = list(map(lambda model: entity.parse_obj(model), results))
+        schemas = list(map(lambda model: schema.parse_obj(model), results))
         if not is_pagination:
-            return entities
-        page_entities = BasePageResponseModel(total=total, page=page_num, size=page_size, items=entities)
-        return page_entities
+            return schemas
+        page_schemas = BasePageResponseModel(total=total, page=page_num, size=page_size, items=schemas)
+        return page_schemas

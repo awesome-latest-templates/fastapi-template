@@ -7,8 +7,8 @@ from fastapi_template.app.api.deps import get_current_user
 from fastapi_template.app.core import Response, ResponseCode
 from fastapi_template.app.core.cvb import cbv
 from fastapi_template.app.core.inferring_router import InferringRouter
-from fastapi_template.app.entity.file_entity import FileSearchRequest
-from fastapi_template.app.entity.user_entity import UserDetailResponse
+from fastapi_template.app.schema.file_schema import FileSearchRequest
+from fastapi_template.app.schema.user_schema import UserDetailResponse
 
 router = InferringRouter()
 

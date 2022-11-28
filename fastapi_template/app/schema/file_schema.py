@@ -1,7 +1,7 @@
-from fastapi_template.app.entity.base_entity import BasePageParamModel, BaseEntityModel
+from fastapi_template.app.schema.base_schema import BasePageParamModel, BaseSchemaModel
 
 
-class FileCreateRequest(BaseEntityModel):
+class FileCreateRequest(BaseSchemaModel):
     file_key: str
     file_url: str
     file_name: str
@@ -9,7 +9,7 @@ class FileCreateRequest(BaseEntityModel):
     content_type: str
 
 
-class FileUpdateRequest(BaseEntityModel):
+class FileUpdateRequest(BaseSchemaModel):
     pass
 
 
@@ -17,7 +17,7 @@ class FileSearchRequest(BasePageParamModel):
     pass
 
 
-class FileResponse(BaseEntityModel):
+class FileResponse(BaseSchemaModel):
     file_key: str = None
     file_url: str = None
     upload_time: str = None
