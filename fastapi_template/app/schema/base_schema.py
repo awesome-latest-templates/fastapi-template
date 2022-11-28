@@ -50,8 +50,8 @@ class BaseSchemaModel(BaseModel):
 
 
 class IdRequest(BaseSchemaModel):
-    id: int
+    id: str
 
 
 class IdResponse(BaseSchemaModel):
-    id: int
+    id: str

@@ -37,8 +37,8 @@ class UserService:
         resp = IdResponse(id=updated_user.id)
         return resp
 
-    async def inactive_user(self, user_id: int):
-        user = await crud.user.inactive(item_id=user_id, update_by=user_id)
+    async def inactive_user(self, user_id: int, update_by: None):
+        user = await crud.user.inactive(item_id=user_id, update_by=update_by)
         if user is None:
             raise HttpException(code=ResponseCode.NOT_FOUND, detail="user not exists")
         resp = IdResponse(id=user.id)

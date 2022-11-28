@@ -16,7 +16,7 @@ class UserUpdateRequest(BaseSchemaModel):
 
 
 class UserDetailResponse(BaseSchemaModel):
-    id: int = 0
+    id: str = None
     user_name: str = None
     nick_name: str = None
     last_login_time: str = None
@@ -30,5 +30,5 @@ class UserSearchRequest(BasePageParamModel):
 
 
 class UserRoleRequest(BaseSchemaModel):
-    user_id: int
+    user_id: str
     roles: list = []

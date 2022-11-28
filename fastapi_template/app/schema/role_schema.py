@@ -9,7 +9,7 @@ class RoleCreateRequest(BaseSchemaModel):
 
 
 class RoleUpdateRequest(RoleCreateRequest):
-    id: int
+    id: str
 
 
 class RoleSearchRequest(BasePageParamModel):
