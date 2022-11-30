@@ -6,7 +6,7 @@ from sqlalchemy import select, and_, text
 from fastapi_template.app import crud
 from fastapi_template.app.core import ResponseCode
 from fastapi_template.app.exception.handler import HttpException
-from fastapi_template.app.model import Role
+from fastapi_template.app.model.role_model import Role
 from fastapi_template.app.schema.base_schema import IdResponse
 from fastapi_template.app.schema.role_schema import RoleCreateRequest, RoleSearchRequest, RoleUpdateRequest
 

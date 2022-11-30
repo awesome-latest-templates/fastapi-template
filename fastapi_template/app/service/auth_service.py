@@ -5,6 +5,7 @@ from fastapi_template.app import model, crud, service
 from fastapi_template.app.core import ResponseCode
 from fastapi_template.app.core.auth.security import create_access_token, verify_password
 from fastapi_template.app.exception.handler import HttpException
+from fastapi_template.app.model.user_model import User
 from fastapi_template.app.schema.auth_schema import TokenPayload, TokenResponse, AuthLoginRequest
 
 
@@ -15,7 +16,7 @@ class AuthService:
         password = form_data.password
         if not (username and password):
             raise HttpException(ResponseCode.USER_PASSWORD_EMPTY)
-        user_data: Optional[model.User] = await crud.user.query_by_username(username=username)
+        user_data: Optional[User] = await crud.user.query_by_username(username=username)
         if not user_data:
             raise HttpException(ResponseCode.USER_NOT_FOUND)
         store_password = user_data.password

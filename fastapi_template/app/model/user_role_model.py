@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer
 
-from fastapi_template.app.model import BaseSQLModel
+from fastapi_template.app.model.base_model import BaseSQLModel
 
 
 class UserRole(BaseSQLModel):

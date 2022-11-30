@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi_template.app.core.db import db
 from fastapi_template.app.crud.base_crud import BaseCrud
-from fastapi_template.app.model import UserRole
+from fastapi_template.app.model.user_role_model import UserRole
 from fastapi_template.app.schema.user_role_schema import UserRoleCreateRequest, UserRoleUpdateRequest
 
 

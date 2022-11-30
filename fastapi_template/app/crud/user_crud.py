@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi_template.app.core.db import db
 from fastapi_template.app.crud.base_crud import BaseCrud
-from fastapi_template.app.model import User
+from fastapi_template.app.model.user_model import User
 from fastapi_template.app.schema.base_schema import BasePageResponseModel
 from fastapi_template.app.schema.user_schema import UserCreateRequest, UserUpdateRequest, UserDetailResponse
 

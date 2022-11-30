@@ -12,7 +12,7 @@ from starlette.requests import Request
 from fastapi_template.app import crud
 from fastapi_template.app.core import ResponseCode
 from fastapi_template.app.exception.handler import HttpException
-from fastapi_template.app.model import FileInfo
+from fastapi_template.app.model.file_model import FileInfo
 from fastapi_template.app.schema.file_schema import FileCreateRequest, FileResponse, FileSearchRequest
 from fastapi_template.config import settings
 

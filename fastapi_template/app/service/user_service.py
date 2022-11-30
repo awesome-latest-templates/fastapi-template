@@ -13,10 +13,11 @@ from fastapi_template.app import crud
 from fastapi_template.app.core import ResponseCode
 from fastapi_template.app.core.auth.security import create_hash_password
 from fastapi_template.app.exception.handler import HttpException
-from fastapi_template.app.model import User, Role
+from fastapi_template.app.model.role_model import Role
+from fastapi_template.app.model.user_model import User
 from fastapi_template.app.schema.base_schema import IdResponse
-from fastapi_template.app.schema.user_schema import UserDetailResponse, UserSearchRequest, UserCreateRequest, \
-    UserUpdateRequest, UserRoleRequest
+from fastapi_template.app.schema.user_schema import (UserDetailResponse, UserSearchRequest, UserCreateRequest,
+                                                     UserUpdateRequest, UserRoleRequest)
 from fastapi_template.config import constants
 
 
